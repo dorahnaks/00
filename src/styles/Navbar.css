@@ -1,0 +1,19 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+}
+
+.logo {
+  height: 40px;
+}
+
+.nav-links a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: black;
+}
