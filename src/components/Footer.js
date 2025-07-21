@@ -1,5 +1,8 @@
 import React from 'react';
 import '../styles/Footer.css';
+import facebookIcon from '../images/fb_icon.png';
+import twitterIcon from '../images/twitter.png';
+import instagramIcon from '../images/insta_icon.png';
 
 
 const Footer = () => {
@@ -24,7 +27,18 @@ const Footer = () => {
         </div>
       </div>
       <div className="footer-bottom">
+        <div className="footer-social">
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <img src={instagramIcon} alt="Instagram" className="social-icon" />
+          </a>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <img src={facebookIcon} alt="Facebook" className="social-icon" />
+          </a>
+          <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <img src={twitterIcon} alt="X" className="social-icon x-icon" />
+          </a>
 
+        </div>
         <p>© 2025 Fruit Design. All rights reserved</p>
       </div>
     </footer>

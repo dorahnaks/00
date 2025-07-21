@@ -2,14 +2,31 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;
-  background: linear-gradient(to right, #ff7e5f, #feb47b);
+  padding: 20px 50px;
+  background: linear-gradient(to right, orange);
   color: white;
+  max-width: 91.5%;
+  margin: 10px auto;
+  border-radius: 10px;
+  box-sizing: content-box;
+  margin-bottom: 0;
 }
 
-.logo {
-  font-size: 28px;
-  font-weight: bold;
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 10%;
+  height: 40%;
+
+}
+
+.logo-container img {
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  object-fit: cover;
+ 
 }
 
 nav a {
