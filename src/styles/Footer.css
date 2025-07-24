@@ -4,7 +4,6 @@
   padding: 40px 0 20px 0;
   font-family: 'Segoe UI', Arial, sans-serif;
 }
-
 .footer-columns {
   display: flex;
   flex-wrap: wrap;
@@ -14,26 +13,21 @@
   padding: 0 20px;
   gap: 32px;
 }
-
 .footer-columns > div {
   flex: 1 1 180px;
   min-width: 180px;
 }
-
 .footer-columns h4 {
   margin-bottom: 10px;
   font-size: 1.1rem;
   color: #fff;
-  
 }
-
 .footer-columns p {
   margin: 0;
   line-height: 1.7;
   font-size: 1rem;
   color: #e0e0e0;
 }
-
 .footer-bottom {
   border-top: 1px solid #444;
   text-align: center;
@@ -41,29 +35,28 @@
   font-size: 0.95rem;
   color: #bbb;
 }
-
 .footer-social {
   margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 16px; /* Added gap for consistent spacing */
 }
-
 .social-icon {
-  width: 21px;
-  height: 21px;
-  margin: 0 8px;
-  vertical-align: middle;
+  width: 24px; /* Standardized size */
+  height: 24px;
+  display: inline-block; /* Added for consistent sizing */
+  vertical-align: middle; /* Added for vertical alignment */
   transition: transform 0.2s;
-
 }
-
 .social-icon:hover {
   transform: scale(1.15);
 }
-
 .x-icon {
-  width: 18px;
-  height: 18px;
+  width: 24px; /* Match other icons */
+  height: 24px;
+  display: inline-block;
+  vertical-align: middle;
 }
-
 @media (max-width: 700px) {
   .footer-columns {
     flex-direction: column;
@@ -77,6 +70,5 @@
   .social-icon {
     width: 28px;
     height: 28px;
-    margin: 0 6px;
   }
 }
