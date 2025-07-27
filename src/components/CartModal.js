@@ -53,7 +53,7 @@ const CartModal = ({ isOpen, onClose }) => {
               </div>
               <div className="cart-actions">
                 <button className="btn-secondary" onClick={clearCart}>Clear Cart</button>
-                <Link to="/order" className="btn-primary">Proceed to Checkout</Link>
+                <Link to="/order" className="btn-primary">Proceed to Checkout</Link> 
               </div>
             </div>
           </>

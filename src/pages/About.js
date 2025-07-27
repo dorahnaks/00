@@ -6,11 +6,8 @@ import manager from '../images/manager.jpg';
 import ceo from '../images/nutri.jpg';
 import nutri from '../images/nutttt.jpg';
 import appleImage from '../images/apple_order_page.jpg';
-import bananaImage from '../images/b_order_pg.jpg';
-import orangeImage from '../images/oranges_pdt_pg.jpg';
 import orangeJuiceImage from '../images/orange_juice_home.png';
-import pineappleJuiceImage from '../images/jui_order_pg.jpg';
-import beetrootJuiceImage from '../images/beetroot juice_order_pg.jpg';
+
 
 const AboutMe = () => {
   return (

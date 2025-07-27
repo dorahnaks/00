@@ -1,60 +1,55 @@
-// src/pages/Cart.js
+// src/components/Cart.js
 import React from 'react';
-import { Link } from 'react-router-dom'; // Add this import
 import { useCart } from '../context/CartContext';
 import '../styles/Cart.css';
+import { Link } from 'react-router-dom';
 
 const Cart = () => {
-  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+  const { cart, clearCart, removeFromCart } = useCart();
+  
+  if (cart.length === 0) {
+    return (
+      <div className="cart-container">
+        <h2>Your Cart</h2>
+        <p>Your cart is empty. Add some products to get started!</p>
+        <Link to="/products" className="btn btn-primary">Browse Products</Link>
+      </div>
+    );
+  }
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <div className="cart-container">
-      <h1>Your Shopping Cart</h1>
+      <h2>Your Cart</h2>
       
-      {cart.length === 0 ? (
-        <div className="empty-cart">
-          <p>Your cart is empty</p>
-          <Link to="/products" className="btn-primary">Continue Shopping</Link>
+      <div className="cart-items">
+        {cart.map(item => (
+          <div key={item.id} className="cart-item">
+            <div className="item-info">
+              <h3>{item.title}</h3>
+              <p>UGX {item.price.toLocaleString()} x {item.quantity}</p>
+            </div>
+            <div className="item-total">
+              UGX {(item.price * item.quantity).toLocaleString()}
+            </div>
+            <button 
+              className="remove-btn"
+              onClick={() => removeFromCart(item.id)}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+      
+      <div className="cart-summary">
+        <h3>Total: UGX {total.toLocaleString()}</h3>
+        <div className="cart-actions">
+          <button className="clear-btn" onClick={clearCart}>Clear Cart</button>
+          <button className="checkout-btn">Proceed to Checkout</button>
         </div>
-      ) : (
-        <>
-          <div className="cart-items">
-            {cart.map(item => (
-              <div key={item.id} className="cart-item">
-                <img src={item.image} alt={item.title} />
-                <div className="cart-item-details">
-                  <h3>{item.title}</h3>
-                  <p>UGX {item.price.toLocaleString()}</p>
-                  <div className="quantity-controls">
-                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
-                  </div>
-                </div>
-                <div className="cart-item-total">
-                  <p>UGX {(item.price * item.quantity).toLocaleString()}</p>
-                  <button 
-                    className="remove-btn" 
-                    onClick={() => removeFromCart(item.id)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="cart-summary">
-            <div className="cart-total">
-              <h2>Total: UGX {cartTotal.toLocaleString()}</h2>
-            </div>
-            <div className="cart-actions">
-              <button className="btn-secondary" onClick={clearCart}>Clear Cart</button>
-              <Link to="/order" className="btn-primary">Proceed to Checkout</Link>
-            </div>
-          </div>
-        </>
-      )}
+      </div>
     </div>
   );
 };

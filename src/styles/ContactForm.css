@@ -54,7 +54,7 @@ textarea {
 
 button.btn-primary {
   width: 100%;
-  background-color: #fbbd08;
+  background-color: rgba(255, 145, 0, 0.89);
   color: white;
   font-weight: bold;
   padding: 14px;

@@ -8,8 +8,6 @@
   color: white;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 100;
 }
 
 .logo-container {
@@ -23,7 +21,13 @@
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.brand-name {
+  margin-left: 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 nav {
@@ -53,6 +57,12 @@ nav a:hover {
   z-index: 1;
 }
 
+.cart-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .cart-icon {
   position: relative;
   cursor: pointer;
@@ -74,7 +84,97 @@ nav a:hover {
   align-items: center;
   font-size: 12px;
   font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.checkout-button-container {
+  display: flex;
+  align-items: center;
+}
+
+.checkout-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.checkout-btn:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.profile-icon {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-icon svg {
+  width: 32px;
+  height: 32px;
+  fill: white;
+}
+
+.profile-icon span {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 3px 8px;
+  border-radius: 10px;
+  transition: background-color 0.3s;
+}
+
+.profile-icon:hover span {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.user-menu {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  min-width: 180px;
+  z-index: 100;
+  display: none;
+}
+
+.user-menu.active {
+  display: block;
+}
+
+.user-menu span {
+  display: block;
+  color: #333;
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.user-menu span:last-child {
+  border-bottom: none;
+  color: #e67e22;
+}
+
+.user-menu span:hover {
+  background: #f9f9f9;
 }
 
 .mobile-menu-btn {
@@ -120,5 +220,9 @@ nav a:hover {
   
   .mobile-menu.active {
     display: flex;
+  }
+  
+  .profile-icon span {
+    display: none;
   }
 }
