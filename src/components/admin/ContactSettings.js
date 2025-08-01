@@ -60,9 +60,9 @@ const ContactSettings = () => {
     try {
       // Mock data for now
       setContactInfo({
-        phone: '+1 (555) 123-4567',
+        phone: '0700 000 000',
         email: 'contact@fruitdesign.com',
-        location: '123 Fruit Street, Orchard City, OC 12345',
+        location: 'Kampala, Uganda',
         mapLink: 'https://maps.google.com/?q=123+Fruit+Street',
         socialMedia: {
           facebook: 'https://facebook.com/fruitdesign',

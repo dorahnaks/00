@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Paper, 
   TextField, 
   Button, 
   Typography, 
   Box, 
   Grid, 
-  IconButton,
   InputAdornment,
   Divider,
   CircularProgress,
@@ -16,15 +14,13 @@ import {
   Avatar,
   useMediaQuery,
   useTheme,
-  Chip,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel
+  Badge,
+  Paper,
+  Stack
 } from '@mui/material';
 import { 
   Person, 
@@ -34,11 +30,11 @@ import {
   Edit, 
   Save,
   Cancel,
+  Cake,
+  Work,
   Security,
   Notifications,
-  Language,
-  Cake,
-  Work
+  Settings
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import { themeColors } from '../../theme/Colors';
@@ -54,17 +50,9 @@ const AdminProfile = () => {
     name: '',
     email: '',
     phone: '',
-    position: '',
-    department: '',
     location: '',
-    bio: '',
     joinDate: '',
-    lastLogin: '',
-    preferences: {
-      language: 'en',
-      notifications: true,
-      theme: 'light'
-    }
+    lastLogin: ''
   });
 
   useEffect(() => {
@@ -74,22 +62,13 @@ const AdminProfile = () => {
   const fetchProfileData = async () => {
     setLoading(true);
     try {
-      // Mock data for now
       setProfileData({
         name: currentUser?.name || 'Admin User',
         email: currentUser?.email || 'admin@fruitdesign.com',
         phone: '+1 (555) 123-4567',
-        position: 'System Administrator',
-        department: 'IT',
         location: 'San Francisco, CA',
-        bio: 'Experienced system administrator with expertise in managing fruit and juice business platforms.',
         joinDate: '2020-01-15',
-        lastLogin: '2023-05-20',
-        preferences: {
-          language: 'en',
-          notifications: true,
-          theme: 'light'
-        }
+        lastLogin: '2023-05-20'
       });
     } catch (error) {
       console.error('Error fetching profile data:', error);
@@ -103,20 +82,9 @@ const AdminProfile = () => {
     setProfileData({ ...profileData, [name]: value });
   };
 
-  const handlePreferenceChange = (key, value) => {
-    setProfileData({
-      ...profileData,
-      preferences: {
-        ...profileData.preferences,
-        [key]: value
-      }
-    });
-  };
-
   const handleSave = async () => {
     setSubmitting(true);
     try {
-      // In a real app, you would save to backend here
       console.log('Saving profile data:', profileData);
       setIsEditing(false);
       alert('Profile updated successfully!');
@@ -148,164 +116,197 @@ const AdminProfile = () => {
           Admin Profile
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Manage your personal information and preferences
+          Manage your personal information and account settings
         </Typography>
       </Box>
       
-      <Grid container spacing={3}>
-        {/* Profile Overview Card */}
-        <Grid item xs={12} md={4}>
+      <Grid container spacing={2}>
+        {/* Left Column - Admin Profile (25% width) */}
+        <Grid item xs={12} md={3}>
           <Card sx={{ 
             borderRadius: '16px', 
             boxShadow: themeColors.shadow.light,
+            overflow: 'hidden',
             height: '100%',
-            position: 'relative',
-            overflow: 'hidden'
+            display: 'flex',
+            flexDirection: 'column'
           }}>
-            {/* Background gradient */}
+            {/* Profile Header */}
             <Box sx={{ 
-              position: 'absolute', 
-              top: 0, 
-              left: 0, 
-              right: 0, 
-              height: 120, 
-              background: themeColors.gradient.primary 
-            }} />
-            
-            <CardContent sx={{ position: 'relative', zIndex: 1, pt: 8 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+              p: 3, 
+              pt: 5, 
+              background: themeColors.gradient.primary,
+              color: 'white',
+              textAlign: 'center',
+              position: 'relative'
+            }}>
+              <Badge
+                overlap="circular"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                sx={{
+                  '& .MuiBadge-badge': {
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    backgroundColor: themeColors.status.success,
+                    border: `2px solid white`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }
+                }}
+                badgeContent={<Person sx={{ fontSize: 16, color: 'white' }} />}
+              >
                 <Avatar 
                   sx={{ 
-                    width: 120, 
-                    height: 120, 
-                    border: `4px solid ${themeColors.neutral.surface}`,
+                    width: 100, 
+                    height: 100, 
+                    border: `4px solid white`,
                     boxShadow: themeColors.shadow.medium,
+                    backgroundColor: 'white',
+                    color: themeColors.primary.main,
+                    fontSize: '2.5rem',
                     mb: 2
                   }}
                 >
                   {profileData.name.charAt(0)}
                 </Avatar>
-                
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: themeColors.neutral.text.primary }}>
-                  {profileData.name}
-                </Typography>
-                
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                  {profileData.position}
-                </Typography>
-                
-                <Chip 
-                  label={profileData.department} 
-                  size="small"
-                  sx={{ 
-                    backgroundColor: `${themeColors.primary.main}20`,
-                    color: themeColors.primary.main,
-                    fontWeight: 'bold',
-                    borderRadius: '6px'
-                  }}
-                />
-              </Box>
+              </Badge>
               
-              <Divider sx={{ my: 2 }} />
+              <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                {profileData.name}
+              </Typography>
               
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Email sx={{ mr: 1, color: themeColors.neutral.text.secondary, fontSize: '1rem' }} />
-                  <Typography variant="body2" color="textSecondary">
-                    {profileData.email}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Phone sx={{ mr: 1, color: themeColors.neutral.text.secondary, fontSize: '1rem' }} />
-                  <Typography variant="body2" color="textSecondary">
-                    {profileData.phone}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <LocationOn sx={{ mr: 1, color: themeColors.neutral.text.secondary, fontSize: '1rem' }} />
-                  <Typography variant="body2" color="textSecondary">
-                    {profileData.location}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Cake sx={{ mr: 1, color: themeColors.neutral.text.secondary, fontSize: '1rem' }} />
-                  <Typography variant="body2" color="textSecondary">
-                    Joined: {profileData.joinDate}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Work sx={{ mr: 1, color: themeColors.neutral.text.secondary, fontSize: '1rem' }} />
-                  <Typography variant="body2" color="textSecondary">
-                    Last login: {profileData.lastLogin}
-                  </Typography>
-                </Box>
-              </Box>
+              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                Administrator
+              </Typography>
+            </Box>
+            
+            {/* Account Details */}
+            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: themeColors.neutral.text.primary, mb: 2 }}>
+                Account Details
+              </Typography>
               
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-                <Button 
-                  variant={isEditing ? "outlined" : "contained"}
-                  startIcon={isEditing ? <Cancel /> : <Edit />}
-                  onClick={isEditing ? handleCancel : () => setIsEditing(true)}
-                  sx={{ 
-                    backgroundColor: isEditing ? 'transparent' : themeColors.gradient.primary,
-                    color: isEditing ? themeColors.primary.main : themeColors.neutral.text.light,
-                    borderColor: themeColors.primary.main,
-                    '&:hover': { 
-                      backgroundColor: isEditing ? `${themeColors.primary.main}10` : themeColors.primary.dark 
-                    },
-                    borderRadius: '12px',
-                    px: 3,
-                    py: 1,
-                    fontWeight: 'bold'
-                  }}
-                >
-                  {isEditing ? 'Cancel' : 'Edit Profile'}
-                </Button>
-              </Box>
+              <Paper elevation={0} sx={{ 
+                p: 2, 
+                borderRadius: '12px', 
+                backgroundColor: themeColors.neutral.surface,
+                border: `1px solid ${themeColors.neutral.divider}`
+              }}>
+                <List dense disablePadding>
+                  <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Cake sx={{ color: themeColors.neutral.text.secondary }} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Joined" 
+                      secondary={profileData.joinDate}
+                      primaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                  
+                  <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Work sx={{ color: themeColors.neutral.text.secondary }} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Last Login" 
+                      secondary={profileData.lastLogin}
+                      primaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ variant: 'body2' }}
+                    />
+                  </ListItem>
+                </List>
+              </Paper>
+              
             </CardContent>
           </Card>
         </Grid>
         
-        {/* Profile Details Card */}
-        <Grid item xs={12} md={8}>
+        {/* Right Column - Personal Information (60% width) */}
+        <Grid item xs={12} md={7.2}>
           <Card sx={{ 
             borderRadius: '16px', 
             boxShadow: themeColors.shadow.light,
-            height: '100%'
+            overflow: 'hidden'
           }}>
+            {/* Card Header with Title and Actions */}
             <CardHeader 
-              title="Profile Information" 
-              titleTypographyProps={{ fontWeight: 'bold', color: themeColors.neutral.text.primary }}
-              subheaderTypographyProps={{ color: 'textSecondary' }}
-              action={
-                isEditing && (
-                  <Button 
-                    variant="contained" 
-                    startIcon={<Save />}
-                    onClick={handleSave}
-                    disabled={submitting}
-                    sx={{ 
-                      background: themeColors.gradient.primary,
-                      '&:hover': { background: themeColors.primary.dark },
-                      borderRadius: '12px',
-                      px: 3,
-                      py: 1,
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {submitting ? <CircularProgress size={20} /> : 'Save Changes'}
-                  </Button>
-                )
+              title={
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Settings sx={{ mr: 1, color: themeColors.primary.main }} />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Personal Information
+                  </Typography>
+                </Box>
               }
+              action={
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {isEditing ? (
+                    <>
+                      <Button 
+                        variant="outlined" 
+                        startIcon={<Cancel />}
+                        onClick={handleCancel}
+                        sx={{ 
+                          borderColor: themeColors.primary.main,
+                          color: themeColors.primary.main,
+                          '&:hover': { 
+                            backgroundColor: `${themeColors.primary.main}10`
+                          },
+                          borderRadius: '12px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        variant="contained" 
+                        startIcon={<Save />}
+                        onClick={handleSave}
+                        disabled={submitting}
+                        sx={{ 
+                          background: themeColors.gradient.primary,
+                          '&:hover': { background: themeColors.primary.dark },
+                          borderRadius: '12px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {submitting ? <CircularProgress size={20} color="inherit" /> : 'Save'}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button 
+                      variant="contained"
+                      startIcon={<Edit />}
+                      onClick={() => setIsEditing(true)}
+                      sx={{ 
+                        background: themeColors.gradient.primary,
+                        '&:hover': { background: themeColors.primary.dark },
+                        borderRadius: '12px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Edit Profile
+                    </Button>
+                  )}
+                </Box>
+              }
+              sx={{ 
+                backgroundColor: themeColors.neutral.surface,
+                borderBottom: `1px solid ${themeColors.neutral.divider}`
+              }}
             />
-            <Divider />
+            
             <CardContent sx={{ p: 3 }}>
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                Update your personal information and contact details
+              </Typography>
+              
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Full Name"
@@ -326,7 +327,7 @@ const AdminProfile = () => {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Email Address"
@@ -347,7 +348,7 @@ const AdminProfile = () => {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Phone Number"
@@ -368,44 +369,7 @@ const AdminProfile = () => {
                   />
                 </Grid>
                 
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Position"
-                    name="position"
-                    value={profileData.position}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Work sx={{ color: themeColors.neutral.text.secondary }} />
-                        </InputAdornment>
-                      ),
-                      sx: {
-                        borderRadius: '12px',
-                      }
-                    }}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Department"
-                    name="department"
-                    value={profileData.department}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    InputProps={{
-                      sx: {
-                        borderRadius: '12px',
-                      }
-                    }}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12}>
                   <TextField
                     fullWidth
                     label="Location"
@@ -425,126 +389,59 @@ const AdminProfile = () => {
                     }}
                   />
                 </Grid>
-                
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Bio"
-                    name="bio"
-                    value={profileData.bio}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    multiline
-                    rows={3}
-                    InputProps={{
-                      sx: {
-                        borderRadius: '12px',
-                      }
-                    }}
-                  />
-                </Grid>
               </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        {/* Preferences Card */}
-        <Grid item xs={12}>
-          <Card sx={{ 
-            borderRadius: '16px', 
-            boxShadow: themeColors.shadow.light
-          }}>
-            <CardHeader 
-              title="Preferences" 
-              titleTypographyProps={{ fontWeight: 'bold', color: themeColors.neutral.text.primary }}
-              subheaderTypographyProps={{ color: 'textSecondary' }}
-              avatar={
-                <Box sx={{ 
-                  width: 48, 
-                  height: 48, 
+              
+              {/* Contact Information Preview */}
+              <Box sx={{ mt: 4 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: themeColors.neutral.text.primary, mb: 2 }}>
+                  Contact Information
+                </Typography>
+                
+                <Paper elevation={0} sx={{ 
+                  p: 2, 
                   borderRadius: '12px', 
-                  background: themeColors.gradient.secondary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: themeColors.shadow.light
+                  backgroundColor: themeColors.neutral.surface,
+                  border: `1px solid ${themeColors.neutral.divider}`
                 }}>
-                  <Security sx={{ color: themeColors.neutral.text.light }} />
-                </Box>
-              }
-            />
-            <Divider />
-            <CardContent sx={{ p: 3 }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Language sx={{ mr: 1, color: themeColors.neutral.text.secondary }} />
-                    <Typography variant="h6" color="textPrimary">
-                      Language
-                    </Typography>
-                  </Box>
-                  <FormControl fullWidth>
-                    <Select
-                      value={profileData.preferences.language}
-                      onChange={(e) => handlePreferenceChange('language', e.target.value)}
-                      disabled={!isEditing}
-                      sx={{
-                        borderRadius: '12px',
-                      }}
-                    >
-                      <MenuItem value="en">English</MenuItem>
-                      <MenuItem value="es">Spanish</MenuItem>
-                      <MenuItem value="fr">French</MenuItem>
-                      <MenuItem value="de">German</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Notifications sx={{ mr: 1, color: themeColors.neutral.text.secondary }} />
-                    <Typography variant="h6" color="textPrimary">
-                      Notifications
-                    </Typography>
-                  </Box>
-                  <FormControl fullWidth>
-                    <Select
-                      value={profileData.preferences.notifications ? 'enabled' : 'disabled'}
-                      onChange={(e) => handlePreferenceChange('notifications', e.target.value === 'enabled')}
-                      disabled={!isEditing}
-                      sx={{
-                        borderRadius: '12px',
-                      }}
-                    >
-                      <MenuItem value="enabled">Enabled</MenuItem>
-                      <MenuItem value="disabled">Disabled</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Security sx={{ mr: 1, color: themeColors.neutral.text.secondary }} />
-                    <Typography variant="h6" color="textPrimary">
-                      Theme
-                    </Typography>
-                  </Box>
-                  <FormControl fullWidth>
-                    <Select
-                      value={profileData.preferences.theme}
-                      onChange={(e) => handlePreferenceChange('theme', e.target.value)}
-                      disabled={!isEditing}
-                      sx={{
-                        borderRadius: '12px',
-                      }}
-                    >
-                      <MenuItem value="light">Light</MenuItem>
-                      <MenuItem value="dark">Dark</MenuItem>
-                      <MenuItem value="system">System Default</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
+                  <List dense disablePadding>
+                    <ListItem sx={{ px: 0, py: 1 }}>
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <Email sx={{ color: themeColors.neutral.text.secondary }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Email" 
+                        secondary={profileData.email}
+                        primaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
+                        secondaryTypographyProps={{ variant: 'body2' }}
+                      />
+                    </ListItem>
+                    
+                    <ListItem sx={{ px: 0, py: 1 }}>
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <Phone sx={{ color: themeColors.neutral.text.secondary }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Phone" 
+                        secondary={profileData.phone}
+                        primaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
+                        secondaryTypographyProps={{ variant: 'body2' }}
+                      />
+                    </ListItem>
+                    
+                    <ListItem sx={{ px: 0, py: 1 }}>
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <LocationOn sx={{ color: themeColors.neutral.text.secondary }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Location" 
+                        secondary={profileData.location}
+                        primaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
+                        secondaryTypographyProps={{ variant: 'body2' }}
+                      />
+                    </ListItem>
+                  </List>
+                </Paper>
+              </Box>
             </CardContent>
           </Card>
         </Grid>

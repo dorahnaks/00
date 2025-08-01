@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Auth.css';
@@ -8,26 +8,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loginMode, setLoginMode] = useState('customer'); // 'customer' or 'admin'
-  const [loginAttempted, setLoginAttempted] = useState(false);
-  const { login, isAdmin, authState } = useAuth();
+  const [loginMode, setLoginMode] = useState('customer');
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  // Handle redirection based on auth state
-  useEffect(() => {
-    if (loginAttempted && authState === 'success') {
-      if (isAdmin) {
-        console.log("Redirecting to admin dashboard");
-        navigate('/admin/dashboard');
-      } else {
-        console.log("Redirecting to home");
-        navigate('/');
-      }
-      setLoginAttempted(false);
-    } else if (loginAttempted && authState === 'error') {
-      setLoginAttempted(false);
-    }
-  }, [loginAttempted, authState, isAdmin, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,22 +18,37 @@ const Login = () => {
     try {
       setError('');
       setLoading(true);
-      setLoginAttempted(false);
-      console.log(`Submitting ${loginMode} login for:`, email);
+      console.log(`=== LOGIN FORM SUBMIT ===`);
+      console.log(`Email: ${email}`);
+      console.log(`Password: ${password ? '***' : 'EMPTY'}`);
+      console.log(`Mode: ${loginMode}`);
       
       const result = await login(email, password, loginMode === 'admin');
-      console.log("Login result:", result);
-      setLoginAttempted(true);
+      console.log("=== LOGIN RESULT ===");
+      console.log("Result:", result);
+      
+      // Redirect immediately after successful login
+      if (result.role === 'admin') {
+        console.log("Redirecting to admin dashboard");
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        console.log("Redirecting to home");
+        navigate('/', { replace: true });
+      }
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("=== LOGIN FORM ERROR ===");
+      console.error("Error:", err);
+      console.error("Error message:", err.message);
+      
       setError(err.message || 'Failed to log in. Check your email and password.');
-      setLoginAttempted(false);
     } finally {
       setLoading(false);
     }
   };
 
   const toggleLoginMode = (mode) => {
+    console.log(`=== TOGGLE LOGIN MODE ===`);
+    console.log(`New mode: ${mode}`);
     setLoginMode(mode);
     setError('');
     setEmail('');
@@ -84,7 +82,11 @@ const Login = () => {
           </div>
         </div>
         
-        {error && <div className="auth-error">{error}</div>}
+        {error && (
+          <div className="auth-error">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
@@ -130,9 +132,9 @@ const Login = () => {
           <button 
             type="submit" 
             className={`auth-button ${loginMode === 'admin' ? 'admin-btn' : ''}`}
-            disabled={loading || authState === 'loading'}
+            disabled={loading}
           >
-            {loading || authState === 'loading' ? (
+            {loading ? (
               <>
                 <span className="loading-spinner"></span>
                 Logging in...

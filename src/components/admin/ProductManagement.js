@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Grid, 
   Card, 
@@ -33,8 +33,20 @@ import {
   TableHead,
   TableRow
 } from '@mui/material';
-import { Search, Add, Edit, Delete, Category, AttachMoney, Inventory, ShoppingCart, Filter, Sort, ViewModule, ViewList } from '@mui/icons-material';
+import { Search, Add, Edit, Delete, Category, AttachMoney, Inventory, 
+        ShoppingCart, Filter, Sort, ViewModule, ViewList } from '@mui/icons-material';
 import { themeColors } from '../../theme/Colors';
+
+// Import your product images directly
+import appleImage from '../../images/apple_order_page.jpg';
+import bananaImage from '../../images/b_order_pg.jpg';
+import orangeImage from '../../images/oranges_pdt_pg.jpg';
+import carrotJuiceImage from '../../images/order_pg.jpg';
+import blueberryImage from '../../images/smoothie.png';
+import pineappleJuiceImage from '../../images/jui_order_pg.jpg';
+import beetrootJuiceImage from '../../images/beetroot juice_order_pg.jpg';
+import mangoImage from '../../images/order_page_background.jpg';
+import watermelonImage from '../../images/watermelon_order_pg.jpg';
 
 const ProductManagement = () => {
   const theme = useTheme();
@@ -63,14 +75,82 @@ const ProductManagement = () => {
 
   const fetchProducts = async () => {
     try {
-      // Mock data for now
+      // Mock data for now - using image paths instead of imported objects
       setProducts([
-        { id: 1, name: 'Fresh Apples', description: 'Crisp and juicy red apples', price: 2.99, category: 'Fruits', stock_quantity: 100, image: '/images/products/apple.jpg' },
-        { id: 2, name: 'Organic Bananas', description: 'Sweet and ripe organic bananas', price: 1.49, category: 'Fruits', stock_quantity: 150, image: '/images/products/banana.jpg' },
-        { id: 3, name: 'Fresh Oranges', description: 'Juicy and vitamin-rich oranges', price: 3.49, category: 'Fruits', stock_quantity: 80, image: '/images/products/orange.jpg' },
-        { id: 4, name: 'Carrot Juice', description: 'Freshly squeezed carrot juice', price: 4.99, category: 'Juices', stock_quantity: 50, image: '/images/products/carrot-juice.jpg' },
-        { id: 5, name: 'Garden Salad', description: 'Fresh mixed greens salad', price: 5.99, category: 'Salads', stock_quantity: 30, image: '/images/products/salad.jpg' },
-        { id: 6, name: 'Mixed Berries', description: 'Assorted fresh berries', price: 6.99, category: 'Fruits', stock_quantity: 40, image: '/images/products/berries.jpg' },
+        { 
+          id: 1, 
+          name: 'Fresh Apples', 
+          description: 'Crisp and juicy red apples', 
+          price: 2.99,
+          category: 'Fruits', 
+          stock_quantity: 16, 
+          image: appleImage
+        },
+        { 
+          id: 2, 
+          name: 'Organic Bananas', 
+          description: 'Sweet and ripe organic bananas', 
+          price: 1.49, 
+          category: 'Fruits', 
+          stock_quantity: 15, 
+          image: bananaImage
+        },
+        { 
+          id: 3, 
+          name: 'Fresh Oranges', 
+          description: 'Juicy and vitamin-rich oranges', 
+          price: 3.49, 
+          category: 'Fruits', 
+          stock_quantity: 30, 
+          image: orangeImage
+        },
+        
+  
+        { 
+          id: 6, 
+          name: 'Mixed Berries', 
+          description: 'Assorted fresh berries', 
+          price: 6.99, 
+          category: 'Fruits', 
+          stock_quantity: 5, 
+          image: blueberryImage
+        },
+        { 
+          id: 7, 
+          name: 'Pineapple Juice', 
+          description: 'Tropical pineapple juice', 
+          price: 4.99, 
+          category: 'Juices', 
+          stock_quantity: 18, 
+          image: pineappleJuiceImage
+        },
+        { 
+          id: 8, 
+          name: 'Beetroot Juice', 
+          description: 'Powerful and healthy beetroot juice', 
+          price: 5.99, 
+          category: 'Juices', 
+          stock_quantity: 15, 
+          image: beetrootJuiceImage
+        },
+        { 
+          id: 9, 
+          name: 'Mango Smoothie', 
+          description: 'Sweet and creamy mango smoothie', 
+          price: 4.99, 
+          category: 'Desserts', 
+          stock_quantity: 10, 
+          image: mangoImage
+        },
+        { 
+          id: 10, 
+          name: 'Watermelon Juice', 
+          description: 'Refreshing watermelon juice', 
+          price: 4.99, 
+          category: 'Juices', 
+          stock_quantity: 20, 
+          image: watermelonImage
+        },
       ]);
       setLoading(false);
     } catch (error) {
@@ -87,7 +167,14 @@ const ProductManagement = () => {
   });
 
   const handleOpen = (product = null) => {
-    setCurrentProduct(product || { name: '', description: '', price: '', category: '', stock_quantity: 0 });
+    setCurrentProduct(product || { 
+      name: '', 
+      description: '', 
+      price: '', 
+      category: '', 
+      stock_quantity: 0,
+      image: '/images/product-placeholder.jpg' // Default image
+    });
     setIsEditing(!!product);
     setOpen(true);
   };

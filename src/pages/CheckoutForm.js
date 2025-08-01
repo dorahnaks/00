@@ -1,7 +1,7 @@
 // src/pages/CheckoutForm.js
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../styles/CheckoutForm.css';
 
 const CheckoutForm = () => {

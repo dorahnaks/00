@@ -63,11 +63,11 @@ const OrderManagement = () => {
     try {
       // Mock data for now
       setOrders([
-        { id: 1, customerId: 1, customerName: 'John Doe', orderDate: '2023-05-15', status: 'Delivered', totalAmount: 45.99, items: 3 },
-        { id: 2, customerId: 2, customerName: 'Jane Smith', orderDate: '2023-05-16', status: 'Processing', totalAmount: 32.50, items: 2 },
-        { id: 3, customerId: 3, customerName: 'Robert Johnson', orderDate: '2023-05-17', status: 'Shipped', totalAmount: 78.25, items: 5 },
-        { id: 4, customerId: 1, customerName: 'John Doe', orderDate: '2023-05-18', status: 'Delivered', totalAmount: 56.75, items: 4 },
-        { id: 5, customerId: 4, customerName: 'Emily Davis', orderDate: '2023-05-19', status: 'Pending', totalAmount: 29.99, items: 2 },
+        { id: 1, customerId: 1, customerName: 'Dorothy', orderDate: '2023-05-15', status: 'Delivered', totalAmount: 45.99, items: 3 },
+        { id: 2, customerId: 2, customerName: 'Whitney', orderDate: '2023-05-16', status: 'Processing', totalAmount: 32.50, items: 2 },
+        { id: 3, customerId: 3, customerName: 'Haula', orderDate: '2023-05-17', status: 'Shipped', totalAmount: 78.25, items: 5 },
+        { id: 4, customerId: 1, customerName: 'Denise', orderDate: '2023-05-18', status: 'Delivered', totalAmount: 56.75, items: 4 },
+        { id: 5, customerId: 4, customerName: 'Viola', orderDate: '2023-05-19', status: 'Pending', totalAmount: 29.99, items: 2 },
       ]);
       setLoading(false);
     } catch (error) {

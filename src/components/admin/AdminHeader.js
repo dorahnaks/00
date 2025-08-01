@@ -76,7 +76,7 @@ const AdminHeader = () => {
             letterSpacing: '0.5px'
           }}
         >
-          Admin Dashboard
+          Welcome to Fruit Design Admin Dashboard
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -202,26 +202,6 @@ const AdminHeader = () => {
             </MenuItem>
             <MenuItem 
               onClick={handleClose}
-              sx={{ 
-                '&:hover': { backgroundColor: themeColors.primary.lighter },
-                py: 1.5,
-                px: 2
-              }}
-            >
-              <Settings sx={{ mr: 1, color: themeColors.primary.main }} /> Settings
-            </MenuItem>
-            <MenuItem 
-              onClick={handleClose}
-              sx={{ 
-                '&:hover': { backgroundColor: themeColors.primary.lighter },
-                py: 1.5,
-                px: 2
-              }}
-            >
-              <Help sx={{ mr: 1, color: themeColors.primary.main }} /> Help
-            </MenuItem>
-            <MenuItem 
-              onClick={handleLogout}
               sx={{ 
                 '&:hover': { backgroundColor: themeColors.primary.lighter },
                 py: 1.5,

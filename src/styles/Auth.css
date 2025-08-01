@@ -358,3 +358,61 @@ input[type="checkbox"] {
 .admin-login-info p:last-child {
   margin-bottom: 0;
 }
+/* API Test Container */
+.api-test-container {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: var(--border-radius);
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.api-test-container h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+}
+
+.test-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.test-buttons button {
+  padding: 8px 16px;
+  background-color: var(--primary-orange);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.test-buttons button:hover {
+  background-color: var(--dark-orange);
+}
+
+.test-buttons button:disabled {
+  background-color: var(--light-orange);
+  cursor: not-allowed;
+}
+
+.test-result {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.test-result pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 0.8rem;
+  color: var(--text-dark);
+}

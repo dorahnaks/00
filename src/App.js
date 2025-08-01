@@ -16,6 +16,7 @@ import './App.css';
 import Cart from './components/Cart';
 import CheckoutForm from './pages/CheckoutForm';
 import OrderConfirmation from './components/OrderConfirmation';
+// import DebugInfo from './components/DebugInfo';
 // Admin Components
 import AdminLayout from './components/admin/AdminLayout';
 import AuthRoute from './components/AuthRoute';
@@ -35,8 +36,28 @@ function App() {
       <CartProvider>
         <Router>
           <div className="app">
-            {/* Customer Routes */}
             <Routes>
+              {/* Admin Routes - Check these first */}
+              <Route path="/admin/*" element={
+                <AuthRoute adminOnly>
+                  <AdminLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<Dashboard />} />
+                      <Route path="customers" element={<CustomerManagement />} />
+                      <Route path="products" element={<ProductManagement />} />
+                      <Route path="orders" element={<OrderManagement />} />
+                      <Route path="promotions" element={<PromotionsManagement />} />
+                      <Route path="feedback" element={<FeedbackManagement />} />
+                      <Route path="admins" element={<AdminManagement />} />
+                      <Route path="contact" element={<ContactSettings />} />
+                      <Route path="profile" element={<AdminProfile />} />
+                      <Route path="*" element={<Dashboard />} />
+                    </Routes>
+                  </AdminLayout>
+                </AuthRoute>
+              } />
+              
+              {/* Customer Routes */}
               <Route path="/*" element={
                 <>
                   <Header />
@@ -67,27 +88,10 @@ function App() {
                   <Footer />
                 </>
               } />
-              
-              {/* Admin Routes */}
-              <Route path="/admin/*" element={
-                <AuthRoute adminOnly>
-                  <AdminLayout>
-                    <Routes>
-                      <Route path="dashboard" element={<Dashboard />} />
-                      <Route path="customers" element={<CustomerManagement />} />
-                      <Route path="products" element={<ProductManagement />} />
-                      <Route path="orders" element={<OrderManagement />} />
-                      <Route path="promotions" element={<PromotionsManagement />} />
-                      <Route path="feedback" element={<FeedbackManagement />} />
-                      <Route path="admins" element={<AdminManagement />} />
-                      <Route path="contact" element={<ContactSettings />} />
-                      <Route path="profile" element={<AdminProfile />} />
-                      <Route path="*" element={<Dashboard />} />
-                    </Routes>
-                  </AdminLayout>
-                </AuthRoute>
-              } />
             </Routes>
+            
+            {/* Temporary Debug Info */}
+            {/* <DebugInfo /> */}
           </div>
         </Router>
       </CartProvider>

@@ -29,11 +29,11 @@ import { Search, Delete, MarkEmailRead, Reply, Star, RateReview, Message } from 
 import { themeColors } from '../../theme/Colors';
 
 const initialFeedback = [
-  { id: 1, customerId: 1, customerName: 'John Doe', message: 'The fruits are always fresh and delicious!', submittedAt: '2023-05-15', status: 'Read' },
-  { id: 2, customerId: 2, customerName: 'Jane Smith', message: 'Delivery was late but the quality was good.', submittedAt: '2023-05-16', status: 'Unread' },
-  { id: 3, customerId: 3, customerName: 'Robert Johnson', message: 'Great variety of organic products. Highly recommend!', submittedAt: '2023-05-17', status: 'Unread' },
-  { id: 4, customerId: 4, customerName: 'Emily Davis', message: 'Love your juice selections! Could you add more sugar-free options?', submittedAt: '2023-05-18', status: 'Unread' },
-  { id: 5, customerId: 1, customerName: 'John Doe', message: 'Customer service is excellent. Had an issue with my last order and it was resolved quickly.', submittedAt: '2023-05-19', status: 'Read' },
+  { id: 1, customerId: 1, customerName: 'Faith', message: 'The fruits are always fresh and delicious!', submittedAt: '2023-05-15', status: 'Read' },
+  { id: 2, customerId: 2, customerName: 'Jovia', message: 'Delivery was late but the quality was good.', submittedAt: '2023-05-16', status: 'Unread' },
+  { id: 3, customerId: 3, customerName: 'Kemmy', message: 'Great variety of organic products. Highly recommend!', submittedAt: '2023-05-17', status: 'Unread' },
+  { id: 4, customerId: 4, customerName: 'Joy', message: 'Love your juice selections! Could you add more sugar-free options?', submittedAt: '2023-05-18', status: 'Unread' },
+  { id: 5, customerId: 1, customerName: 'John', message: 'Customer service is excellent. Had an issue with my last order and it was resolved quickly.', submittedAt: '2023-05-19', status: 'Read' },
 ];
 
 const FeedbackManagement = () => {

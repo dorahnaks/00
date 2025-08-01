@@ -50,11 +50,11 @@ const CustomerManagement = () => {
     try {
       // Mock data for now
       setCustomers([
-        { id: 1, name: 'John Doe', phone: '123-456-7890', email: 'john@example.com', address: '123 Main St', joinDate: '2022-01-15', lastOrder: '2023-05-10', totalOrders: 12, totalSpent: 456.78 },
-        { id: 2, name: 'Jane Smith', phone: '987-654-3210', email: 'jane@example.com', address: '456 Oak Ave', joinDate: '2022-03-22', lastOrder: '2023-05-12', totalOrders: 8, totalSpent: 324.50 },
-        { id: 3, name: 'Robert Johnson', phone: '555-123-4567', email: 'robert@example.com', address: '789 Pine Rd', joinDate: '2021-11-05', lastOrder: '2023-05-05', totalOrders: 24, totalSpent: 876.32 },
-        { id: 4, name: 'Emily Davis', phone: '444-567-8901', email: 'emily@example.com', address: '321 Elm St', joinDate: '2022-07-18', lastOrder: '2023-05-15', totalOrders: 5, totalSpent: 189.75 },
-        { id: 5, name: 'Michael Wilson', phone: '333-789-0123', email: 'michael@example.com', address: '654 Maple Dr', joinDate: '2023-02-28', lastOrder: '2023-05-14', totalOrders: 3, totalSpent: 98.40 },
+        { id: 1, name: 'Dorothy Naks', phone: '123-456-7890', email: 'john@example.com', address: '123 Main St', joinDate: '2022-01-15', lastOrder: '2023-05-10', totalOrders: 12, totalSpent: 456.78 },
+        { id: 2, name: 'Julie K', phone: '987-654-3210', email: 'jane@example.com', address: '456 Oak Ave', joinDate: '2022-03-22', lastOrder: '2023-05-12', totalOrders: 8, totalSpent: 324.50 },
+        { id: 3, name: 'Whitney Josephine', phone: '555-123-4567', email: 'robert@example.com', address: '789 Pine Rd', joinDate: '2021-11-05', lastOrder: '2023-05-05', totalOrders: 24, totalSpent: 876.32 },
+        { id: 4, name: 'Sarah N', phone: '444-567-8901', email: 'emily@example.com', address: '321 Elm St', joinDate: '2022-07-18', lastOrder: '2023-05-15', totalOrders: 5, totalSpent: 189.75 },
+        { id: 5, name: 'Faith Mercy', phone: '333-789-0123', email: 'michael@example.com', address: '654 Maple Dr', joinDate: '2023-02-28', lastOrder: '2023-05-14', totalOrders: 3, totalSpent: 98.40 },
       ]);
       setLoading(false);
     } catch (error) {

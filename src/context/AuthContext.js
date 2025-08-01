@@ -25,7 +25,6 @@ export const AuthProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [authState, setAuthState] = useState('idle'); // 'idle', 'loading', 'success', 'error'
 
   // On app load, check for existing token
   useEffect(() => {
@@ -39,8 +38,9 @@ export const AuthProvider = ({ children }) => {
           setCurrentUser(user);
           setIsAdmin(user.role === 'admin');
           setToken(storedToken);
+          console.log("Auth initialized from storage:", user);
         } catch (error) {
-          // Invalid user data, clear storage
+          console.error("Error parsing stored user:", error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
         }
@@ -53,106 +53,133 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, isAdminMode = false) => {
     try {
-      setAuthState('loading');
+      console.log(`=== LOGIN ATTEMPT ===`);
+      console.log(`Email: ${email}`);
+      console.log(`Password: ${password ? '***' : 'EMPTY'}`);
+      console.log(`Admin Mode: ${isAdminMode}`);
+
       let response;
       
       if (isAdminMode) {
-        // Explicit admin login
         console.log("Attempting admin login...");
         response = await authAPI.loginAdmin({ email, password });
+        console.log("Admin login response:", response);
+        console.log("Response data:", response.data);
+        
+        // Check if response has expected structure
+        if (!response.data || !response.data.access_token || !response.data.admin) {
+          console.error("Invalid admin response structure:", response.data);
+          throw new Error('Invalid response from server');
+        }
+        
         const { access_token, admin } = response.data;
         
-        console.log("Admin login successful", admin);
+        console.log("Admin login successful:", admin);
         
+        // Update state first
+        setCurrentUser(admin);
+        setIsAdmin(true);
+        setToken(access_token);
+        
+        // Then update localStorage
         localStorage.setItem('token', access_token);
         localStorage.setItem('user', JSON.stringify(admin));
         
-        setToken(access_token);
-        setCurrentUser(admin);
-        setIsAdmin(true);
-        setAuthState('success');
+        console.log("State and localStorage updated");
         
         return { success: true, role: 'admin', user: admin };
       } else {
-        // Try customer login first
-        try {
-          console.log("Attempting customer login...");
-          response = await authAPI.loginCustomer({ email, password });
-          const { access_token, customer } = response.data;
-          
-          console.log("Customer login successful", customer);
-          
-          localStorage.setItem('token', access_token);
-          localStorage.setItem('user', JSON.stringify(customer));
-          
-          setToken(access_token);
-          setCurrentUser(customer);
-          setIsAdmin(false);
-          setAuthState('success');
-          
-          return { success: true, role: 'customer', user: customer };
-        } catch (customerError) {
-          // If customer login fails, try admin login
-          console.log("Customer login failed, trying admin login...");
-          try {
-            response = await authAPI.loginAdmin({ email, password });
-            const { access_token, admin } = response.data;
-            
-            console.log("Admin login successful", admin);
-            
-            localStorage.setItem('token', access_token);
-            localStorage.setItem('user', JSON.stringify(admin));
-            
-            setToken(access_token);
-            setCurrentUser(admin);
-            setIsAdmin(true);
-            setAuthState('success');
-            
-            return { success: true, role: 'admin', user: admin };
-          } catch (adminError) {
-            // Both logins failed
-            setAuthState('error');
-            throw new Error('Invalid email or password');
-          }
+        console.log("Attempting customer login...");
+        response = await authAPI.loginCustomer({ email, password });
+        console.log("Customer login response:", response);
+        console.log("Response data:", response.data);
+        
+        // Check if response has expected structure
+        if (!response.data || !response.data.access_token || !response.data.customer) {
+          console.error("Invalid customer response structure:", response.data);
+          throw new Error('Invalid response from server');
         }
+        
+        const { access_token, customer } = response.data;
+        
+        console.log("Customer login successful:", customer);
+        
+        // Update state first
+        setCurrentUser(customer);
+        setIsAdmin(false);
+        setToken(access_token);
+        
+        // Then update localStorage
+        localStorage.setItem('token', access_token);
+        localStorage.setItem('user', JSON.stringify(customer));
+        
+        console.log("State and localStorage updated");
+        
+        return { success: true, role: 'customer', user: customer };
       }
     } catch (error) {
-      console.error("Login failed:", error);
-      setAuthState('error');
-      throw new Error(error.response?.data?.error || 'Login failed');
+      console.error("=== LOGIN FAILED ===");
+      console.error("Error object:", error);
+      console.error("Error response:", error.response);
+      console.error("Error message:", error.message);
+      
+      // Extract error message from response if available
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Login failed';
+      
+      console.error("Final error message:", errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
   const signup = async (name, email, password, phone, address) => {
     try {
-      setAuthState('loading');
+      console.log("=== SIGNUP ATTEMPT ===");
       const response = await authAPI.registerCustomer({
         name, email, password, phone, address
       });
+      
+      console.log("Signup response:", response);
+      console.log("Response data:", response.data);
+      
       const { access_token, customer } = response.data;
       
+      // Update state first
+      setCurrentUser(customer);
+      setIsAdmin(false);
+      setToken(access_token);
+      
+      // Then update localStorage
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(customer));
       
-      setToken(access_token);
-      setCurrentUser(customer);
-      setIsAdmin(false);
-      setAuthState('success');
+      console.log("Signup successful");
       
       return { success: true, role: 'customer', user: customer };
     } catch (error) {
-      setAuthState('error');
-      throw new Error(error.response?.data?.error || 'Registration failed');
+      console.error("=== SIGNUP FAILED ===");
+      console.error("Error object:", error);
+      console.error("Error response:", error.response);
+      
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Registration failed';
+      
+      throw new Error(errorMessage);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
+    console.log("=== LOGOUT ===");
     setCurrentUser(null);
     setIsAdmin(false);
-    setAuthState('idle');
+    setToken(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    console.log("Logout completed");
   };
 
   const value = {
@@ -160,7 +187,6 @@ export const AuthProvider = ({ children }) => {
     isAdmin,
     loading,
     token,
-    authState,
     login,
     signup,
     logout

@@ -295,13 +295,11 @@ const Dashboard = () => {
       
       // Stats data
       setStats({
-        customers: 1254,
+        customers: 120,
         products: 86,
-        pendingOrders: 24,
-        unreadFeedback: 7,
-        revenue: 45678,
-        conversionRate: 3.2,
-        stores: 12,
+        pendingOrders: 7,
+        unreadFeedback: 6,
+        revenue: 150000,
         promotions: 5
       });
       
@@ -470,16 +468,7 @@ const Dashboard = () => {
           />
         </Grid>
       
-        <Grid item xs={12} sm={6} md={4} lg={3}>
-          <StatCard 
-            title="Stores"
-            value={stats.stores}
-            subtitle="Active stores"
-            icon={<Storefront />}
-            trend="+2 new this month"
-            color={themeColors.accent.main}
-          />
-        </Grid>
+      
         
         <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatCard 
@@ -529,7 +518,7 @@ const Dashboard = () => {
                   type="monotone" 
                   dataKey="revenue" 
                   stroke={themeColors.primary.main} 
-                  name="Actual Revenue ($)" 
+                  name="Actual Revenue (UGX)" 
                   strokeWidth={2} 
                   dot={{ r: 4 }} 
                   activeDot={{ r: 6 }}
@@ -538,7 +527,7 @@ const Dashboard = () => {
                   type="monotone" 
                   dataKey="target" 
                   stroke={themeColors.secondary.main} 
-                  name="Target Revenue ($)" 
+                  name="Target Revenue (UGX)" 
                   strokeWidth={2} 
                   strokeDasharray="5 5"
                   dot={{ r: 4 }}
@@ -548,7 +537,7 @@ const Dashboard = () => {
           </ChartCard>
         </Grid>
         
-        <Grid item xs={12} md={6} lg={3}>
+        <Grid item xs={12} md={6} lg={6}>
           <ChartCard 
             title="Sales by Category" 
             subtitle="Product category distribution"

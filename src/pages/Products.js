@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import '../styles/Products.css';
 import ProductCard from '../components/ProductForm';
-// Import your product images
+// Importing the product images
 import appleImage from '../images/apple_order_page.jpg';
 import bananaImage from '../images/b_order_pg.jpg';
 import orangeImage from '../images/oranges_pdt_pg.jpg';
