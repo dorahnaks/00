@@ -95,12 +95,6 @@ const Header = () => {
           )}
         </div>
         
-        <button 
-          className="mobile-menu-btn" 
-          onClick={() => setIsCartOpen(!isCartOpen)}
-        >
-          ☰
-        </button>
       </div>
     </header>
   );

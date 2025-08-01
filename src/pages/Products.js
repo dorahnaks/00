@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import '../styles/Products.css';
 import ProductCard from '../components/ProductForm';
-
 // Import your product images
 import appleImage from '../images/apple_order_page.jpg';
 import bananaImage from '../images/b_order_pg.jpg';
@@ -24,9 +23,9 @@ import mixedFruitJuiceImage from '../images/pdt_pg.jpg';
 import watermelonJuiceImage from '../images/watermelon_order_pg.jpg';
 
 const Products = () => {
-  const { cart, addToCart } = useCart();
+  const { cart } = useCart(); // Removed unused addToCart
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  // Removed unused selectedCategory state
   const [showMoreFruits, setShowMoreFruits] = useState(false);
   const [showMoreJuices, setShowMoreJuices] = useState(false);
   
@@ -172,22 +171,22 @@ const Products = () => {
       image: watermelonJuiceImage
     }
   ];
-
+  
   // Filter products based on search term
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
-
-  // Get fruits (show 3 initially, more when "More" is clicked)
+  
+  // Get fruits (show 4 initially, more when "More" is clicked)
   const fruits = filteredProducts.filter(product => product.category === "Fruits");
   const visibleFruits = showMoreFruits ? fruits : fruits.slice(0, 3);
-
-  // Get juices (show 3 initially, more when "More" is clicked)
+  
+  // Get juices (show 4 initially, more when "More" is clicked)
   const juices = filteredProducts.filter(product => product.category === "Juices");
   const visibleJuices = showMoreJuices ? juices : juices.slice(0, 3);
-
+  
   return (
     <div className="products-container">
       <div className="products-header">
@@ -272,7 +271,7 @@ const Products = () => {
           <div className="total">
             <h3>Total: UGX {cart.reduce((total, item) => total + item.price * item.quantity, 0).toLocaleString()}</h3>
           </div>
-          <Link to="/checkout" className="btn-primary">Proceed to Checkout</Link>
+          <Link to="/checkout" className="btn-primary-n">Proceed to Checkout</Link>
         </div>
       )}
     </div>

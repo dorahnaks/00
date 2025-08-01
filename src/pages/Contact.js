@@ -50,7 +50,7 @@ const Contact = () => {
           </div>
 
           <div className="contact-form-container">
-            <h2>Send us a Message</h2>
+            <h2 className='Sm'>Send us a Message</h2>
             <ContactForm />
           </div>
         </div>

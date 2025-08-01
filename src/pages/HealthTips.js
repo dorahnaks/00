@@ -1,108 +1,117 @@
-
-import '../styles/HealthTips.css';
+import React, { useState, useMemo } from 'react';
 import HealthTipCard from '../components/HealthTipCard';
+import { healthTipsData, quickTipsData } from '../components/HealthTipsData';
+import '../styles/HealthTips.css';
+
+// Available categories for filtering
+const CATEGORIES = [
+  { id: 'all', name: 'All Fruits', color: '#4CAF50' },
+  { id: 'citrus', name: 'Citrus', color: '#FF9800' },
+  { id: 'berries', name: 'Berries', color: '#9C27B0' },
+  { id: 'tropical', name: 'Tropical', color: '#FF9800' },
+  { id: 'hydrating', name: 'Hydrating', color: '#03A9F4' },
+  { id: 'other', name: 'Other', color: '#607D8B' }
+];
 
 const HealthTips = () => {
-  const healthTips = [
-    {
-      title: 'Citrus fruits',
-      description: 'Orange & Orange Juice: Boosts immunity, energizes, supports skin health'
-    },
-    {
-      title: 'Lemon & lemon Water',
-      description: 'Aids digestion, detoxifies, hydrates'
-    },
-    {
-      title: 'Tangerine',
-      description: 'Rich in antioxidants, enhances iron absorption'
-    },
-    {
-      title: 'Tropical fruit',
-      description: 'Mango: Boosts immunity & skin health'
-    },
-    {
-      title: 'Banana',
-      description: 'Energizing, rich in potassium'
-    },
-    {
-      title: 'Strawberries',
-      description: 'Good for skin & heart'
-    },
-    {
-      title: 'Blueberries',
-      description: 'Boost brain & memory'
-    },
-    {
-      title: 'Raspberries',
-      description: 'High fibre, balances blood sugar'
-    },
-    {
-      title: 'Watermelon',
-      description: 'Great for hydration, supports kidney function'
-    },
-    {
-      title: 'Watermelon Juice',
-      description: 'Cooling and detoxifying'
-    },
-    {
-      title: 'Grapes',
-      description: 'High in antioxidants, improve circulation and brain function'
-    },
-    {
-      title: 'Grape Juice',
-      description: 'Supports heart health, reduces inflammation, energizes'
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter health tips based on category and search term
+  const filteredHealthTips = useMemo(() => {
+    return healthTipsData.filter(tip => {
+      const matchesCategory = selectedCategory === 'all' || tip.category === selectedCategory;
+      const matchesSearch = searchTerm === '' || 
+        tip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tip.description.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return matchesCategory && matchesSearch;
+    });
+  }, [selectedCategory, searchTerm]);
+
+  // Filter quick tips based on selected category
+  const filteredQuickTips = useMemo(() => {
+    if (selectedCategory === 'all') {
+      return quickTipsData;
     }
-  ];
+    return quickTipsData.filter(tip => tip.category === selectedCategory);
+  }, [selectedCategory]);
+
+  const handleTipClick = (tip) => {
+    // Here you could also open a modal or navigate to a detail page
+    console.log('Tip clicked:', tip);
+  };
 
   return (
     <div className="health-tips">
-      <h1>Juicy Wellness</h1>
-      <p>Discover how adding fruits and fresh juices to your diet can boost immunity and overall well-being</p>
+      <div className="fruit-pattern"></div>
       
-      <div className="tips-grid">
-        {healthTips.map((tip, index) => (
-          <HealthTipCard 
-            key={index} 
-            title={tip.title} 
-            description={tip.description} 
-          />
-        ))}
-      </div>
-      
-      <div className="quick-tips">
-        <h2>Quick Tips</h2>
-        <div className="tips-container">
-          <div className="tip">
-            <h3>Tropical fruits</h3>
-            <p>Enjoy a slice of pineapple after a meal to aid digestion</p>
+      <div className="content-wrapper">
+        <header className="health-tips-header">
+          <h1>Juicy Wellness</h1>
+          <p>Discover how adding fruits and fresh juices to your diet can boost immunity and overall well-being</p>
+          
+          <div className="filter-section">
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Search health tips..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                aria-label="Search health tips"
+              />
+            </div>
+            
+            <div className="category-filters">
+              {CATEGORIES.map(category => (
+                <button
+                  key={category.id}
+                  className={`filter-button ${selectedCategory === category.id ? 'active' : ''}`}
+                  onClick={() => setSelectedCategory(category.id)}
+                  style={selectedCategory === category.id ? { backgroundColor: category.color } : {}}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="tip">
-            <h3>Citrus fruits</h3>
-            <p>Add fresh lemon juice into your water for a refreshing and hydrating drink</p>
+        </header>
+        
+        <div className="tips-count">
+          Showing {filteredHealthTips.length} tips
+        </div>
+        
+        {filteredHealthTips.length === 0 ? (
+          <div className="no-results">
+            <p>No health tips found. Try a different search or category.</p>
           </div>
-          <div className="tip">
-            <h3>Apples & Pears</h3>
-            <p>Eat them with the skin on for maximum fiber and digestive benefits</p>
+        ) : (
+          <div className="tips-container">
+            {filteredHealthTips.map(tip => (
+              <HealthTipCard 
+                key={tip.id} 
+                title={tip.title} 
+                description={tip.description} 
+                icon={tip.icon}
+                color={tip.color}
+                onClick={() => handleTipClick(tip)}
+              />
+            ))}
           </div>
-          <div className="tip">
-            <h3>Grapes</h3>
-            <p>Freeze grapes for a fun, antioxidant-packed snack - great in summer!</p>
-          </div>
-          <div className="tip">
-            <h3>Berry Fruits</h3>
-            <p>Top your oatmeal with blueberries or strawberries to boost antioxidants and support brain health</p>
-          </div>
-          <div className="tip">
-            <h3>Pineapple</h3>
-            <p>Drink fresh pineapple juice after meals to aid digestion with bromelain enzyme</p>
-          </div>
-          <div className="tip">
-            <h3>Stone Fruits (e.g., mango, peach)</h3>
-            <p>Add slices to yogurt or salad for a sweet nutrient boost and skin-friendly vitamins</p>
-          </div>
-          <div className="tip">
-            <h3>Hydrating Fruits</h3>
-            <p>Snack on watermelon after workouts to rehydrate and reduce muscle soreness naturally</p>
+        )}
+        
+        <div className="quick-tips-section">
+          <h2>Quick Tips</h2>
+          <div className="quick-tips-scroll">
+            {filteredQuickTips.map(tip => (
+              <div key={tip.id} className="quick-tip" style={{ backgroundColor: `${tip.color}10` }}>
+                <div className="quick-tip-icon">{tip.icon}</div>
+                <div className="quick-tip-content">
+                  <h3>{tip.title}</h3>
+                  <p>{tip.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

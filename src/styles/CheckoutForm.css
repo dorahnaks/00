@@ -66,7 +66,7 @@ h1 {
 }
 
 .btn-primary {
-  background-color: #007bff;
+  background-color: #fc823b;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -76,5 +76,5 @@ h1 {
 }
 
 .btn-primary:hover {
-  background-color: #0056b3;
+  background-color: #f88f49;
 }

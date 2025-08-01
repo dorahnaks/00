@@ -12,20 +12,26 @@
 }
 
 .form-group {
-  width: 46%; /* ensures spacing between fields without wrapping */
+  width: 50%; 
   display: flex;
   flex-direction: column;
+}
+
+.rd {
+  max-width: 45%;
+  margin-right: 20px;
 }
 
 .full-width {
   width: 100%;
 }
 
-label {
+.form-row .form-group label {
   font-weight: bold;
   margin-bottom: 8px;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   color: #000;
+  margin-left: 2px;
 }
 
 input,
