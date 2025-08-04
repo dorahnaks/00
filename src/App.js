@@ -84,7 +84,7 @@ function App() {
                         </AuthRoute>
                       } />
                     </Routes>
-                  </main>
+                  </main>\
                   <Footer />
                 </>
               } />
