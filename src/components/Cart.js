@@ -5,7 +5,7 @@ import '../styles/Cart.css';
 import { Link } from 'react-router-dom';
 
 const Cart = () => {
-  const { cart, clearCart, removeFromCart } = useCart();
+  const { cart, clearCart, removeFromCart, updateQuantity, stockError, clearStockError } = useCart();
   
   if (cart.length === 0) {
     return (
@@ -16,19 +16,49 @@ const Cart = () => {
       </div>
     );
   }
-
+  
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  const handleQuantityChange = (productId, newQuantity, stockQuantity) => {
+    updateQuantity(productId, newQuantity, stockQuantity);
+  };
 
   return (
     <div className="cart-container">
       <h2>Your Cart</h2>
+      
+      {/* Display stock error if any */}
+      {stockError && (
+        <div className="cart-stock-error">
+          <p>{stockError.message}</p>
+          <button onClick={clearStockError} className="close-error-btn">×</button>
+        </div>
+      )}
       
       <div className="cart-items">
         {cart.map(item => (
           <div key={item.id} className="cart-item">
             <div className="item-info">
               <h3>{item.title}</h3>
-              <p>UGX {item.price.toLocaleString()} x {item.quantity}</p>
+              <p>UGX {item.price.toLocaleString()} each</p>
+              <div className="stock-info">
+                Stock: {item.stock_quantity} available
+              </div>
+              <div className="quantity-controls">
+                <button 
+                  onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.stock_quantity)}
+                  disabled={item.quantity <= 1}
+                >
+                  -
+                </button>
+                <span>{item.quantity}</span>
+                <button 
+                  onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.stock_quantity)}
+                  disabled={item.quantity >= item.stock_quantity}
+                >
+                  +
+                </button>
+              </div>
             </div>
             <div className="item-total">
               UGX {(item.price * item.quantity).toLocaleString()}

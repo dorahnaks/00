@@ -1,8 +1,8 @@
+// AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authAPI } from '../api/AuthAPI';
+import authAPI from '../api/AuthAPI';
 
 const AuthContext = createContext();
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -10,6 +10,7 @@ export const useAuth = () => {
     return {
       currentUser: null,
       isAdmin: false,
+      isSuperAdmin: false,
       loading: false,
       token: null,
       login: () => Promise.reject(new Error("AuthContext not available")),
@@ -23,6 +24,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
@@ -36,7 +38,19 @@ export const AuthProvider = ({ children }) => {
         try {
           const user = JSON.parse(storedUser);
           setCurrentUser(user);
-          setIsAdmin(user.role === 'admin');
+          
+          // Determine role from user object
+          if (user.role === 'admin') {
+            setIsAdmin(true);
+            setIsSuperAdmin(false);
+          } else if (user.role === 'superadmin') {
+            setIsAdmin(true);
+            setIsSuperAdmin(true);
+          } else {
+            setIsAdmin(false);
+            setIsSuperAdmin(false);
+          }
+          
           setToken(storedToken);
           console.log("Auth initialized from storage:", user);
         } catch (error) {
@@ -47,89 +61,89 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     };
-
     initAuth();
   }, []);
 
-  const login = async (email, password, isAdminMode = false) => {
+  const login = async (email, password) => {
     try {
       console.log(`=== LOGIN ATTEMPT ===`);
       console.log(`Email: ${email}`);
       console.log(`Password: ${password ? '***' : 'EMPTY'}`);
-      console.log(`Admin Mode: ${isAdminMode}`);
-
-      let response;
       
-      if (isAdminMode) {
-        console.log("Attempting admin login...");
-        response = await authAPI.loginAdmin({ email, password });
-        console.log("Admin login response:", response);
-        console.log("Response data:", response.data);
-        
-        // Check if response has expected structure
-        if (!response.data || !response.data.access_token || !response.data.admin) {
-          console.error("Invalid admin response structure:", response.data);
-          throw new Error('Invalid response from server');
-        }
-        
-        const { access_token, admin } = response.data;
-        
-        console.log("Admin login successful:", admin);
-        
-        // Update state first
-        setCurrentUser(admin);
-        setIsAdmin(true);
-        setToken(access_token);
-        
-        // Then update localStorage
-        localStorage.setItem('token', access_token);
-        localStorage.setItem('user', JSON.stringify(admin));
-        
-        console.log("State and localStorage updated");
-        
-        return { success: true, role: 'admin', user: admin };
-      } else {
-        console.log("Attempting customer login...");
-        response = await authAPI.loginCustomer({ email, password });
-        console.log("Customer login response:", response);
-        console.log("Response data:", response.data);
-        
-        // Check if response has expected structure
-        if (!response.data || !response.data.access_token || !response.data.customer) {
-          console.error("Invalid customer response structure:", response.data);
-          throw new Error('Invalid response from server');
-        }
-        
-        const { access_token, customer } = response.data;
-        
-        console.log("Customer login successful:", customer);
-        
-        // Update state first
-        setCurrentUser(customer);
-        setIsAdmin(false);
-        setToken(access_token);
-        
-        // Then update localStorage
-        localStorage.setItem('token', access_token);
-        localStorage.setItem('user', JSON.stringify(customer));
-        
-        console.log("State and localStorage updated");
-        
-        return { success: true, role: 'customer', user: customer };
+      // Single login call without specifying role
+      const response = await authAPI.login({ email, password });
+      console.log("Login response:", response);
+      console.log("Response data:", response.data);
+      
+      // Check if response has expected structure
+      if (!response.data) {
+        console.error("No data in response:", response);
+        throw new Error('Invalid response from server');
       }
+      
+      // Handle different response structures
+      let access_token, role, user_id;
+      
+      if (response.data.data) {
+        // New structure: response.data.data contains the tokens and user info
+        ({ access_token, role, user_id } = response.data.data);
+      } else if (response.data.access_token) {
+        // Alternative structure: tokens are directly in response.data
+        ({ access_token, role, user_id } = response.data);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+        throw new Error('Invalid response structure from server');
+      }
+      
+      if (!access_token) {
+        console.error("No access token in response");
+        throw new Error('Access token not found in response');
+      }
+      
+      // Create user object based on role
+      let user = {
+        id: user_id,
+        role: role,
+        email: email
+      };
+      
+      console.log("Login successful:", user);
+      
+      // Update state first
+      setCurrentUser(user);
+      
+      // Set admin flags based on role
+      if (role === 'admin') {
+        setIsAdmin(true);
+        setIsSuperAdmin(false);
+      } else if (role === 'superadmin') {
+        setIsAdmin(true);
+        setIsSuperAdmin(true);
+      } else {
+        setIsAdmin(false);
+        setIsSuperAdmin(false);
+      }
+      
+      setToken(access_token);
+      
+      // Then update localStorage
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      console.log("State and localStorage updated");
+      
+      return { success: true, role, user };
     } catch (error) {
       console.error("=== LOGIN FAILED ===");
       console.error("Error object:", error);
       console.error("Error response:", error.response);
       console.error("Error message:", error.message);
       
-      // Extract error message from response if available
       const errorMessage = error.response?.data?.error || 
                           error.response?.data?.message || 
                           error.message || 
                           'Login failed';
       
-      console.error("Final error message:", errorMessage);
       throw new Error(errorMessage);
     }
   };
@@ -144,11 +158,24 @@ export const AuthProvider = ({ children }) => {
       console.log("Signup response:", response);
       console.log("Response data:", response.data);
       
-      const { access_token, customer } = response.data;
+      // Handle different response structures
+      let access_token, customer;
+      
+      if (response.data.data) {
+        // New structure: response.data.data contains the tokens and user info
+        ({ access_token, customer } = response.data.data);
+      } else if (response.data.access_token) {
+        // Alternative structure: tokens are directly in response.data
+        ({ access_token, customer } = response.data);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+        throw new Error('Invalid response structure from server');
+      }
       
       // Update state first
       setCurrentUser(customer);
       setIsAdmin(false);
+      setIsSuperAdmin(false);
       setToken(access_token);
       
       // Then update localStorage
@@ -176,6 +203,7 @@ export const AuthProvider = ({ children }) => {
     console.log("=== LOGOUT ===");
     setCurrentUser(null);
     setIsAdmin(false);
+    setIsSuperAdmin(false);
     setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -185,6 +213,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     isAdmin,
+    isSuperAdmin,
     loading,
     token,
     login,

@@ -6,6 +6,7 @@ import orangeJuiceImg from '../images/orange_juice_home.png';
 import appleHomeImg from '../images/apple_home.png';
 import berrySmoothieImg from '../images/smoothie.png';
 import tropicalSellersImg from '../images/salad.png';
+import jui_order from '../images/jui_order_pg.jpg'
 import { FaLeaf, FaHeartbeat, FaBolt } from 'react-icons/fa';
 
 const Home = () => {
@@ -15,7 +16,6 @@ const Home = () => {
       <section className="hero">
         <h1>Taste the Freshness</h1>
         <p>Discover a wide selection of fresh fruits and delicious juices, crafted with care and bursting with flavour</p>
-        {/* Added Link component to navigate to products page */}
         <Link to="/products" className="order-btn">Order now</Link>
       </section>
       
@@ -42,6 +42,11 @@ const Home = () => {
             image={tropicalSellersImg}
             title="Tropical Sellers" 
             description="A refreshing mix of tropical fruits" 
+          />
+          <ProductCard 
+            image={jui_order}
+            title="juice" 
+            description="Sweet and tasty juice from naural fruits" 
           />
         </div>
       </section>

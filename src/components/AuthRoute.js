@@ -1,9 +1,10 @@
+// AuthRoute.js
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const AuthRoute = ({ children, adminOnly = false }) => {
-  const { currentUser, isAdmin, loading } = useAuth(); // Use currentUser instead of isAuthenticated
+const AuthRoute = ({ children, adminOnly = false, superAdminOnly = false }) => {
+  const { currentUser, isAdmin, isSuperAdmin, loading } = useAuth();
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
@@ -21,8 +22,12 @@ const AuthRoute = ({ children, adminOnly = false }) => {
     );
   }
 
-  if (!currentUser) { // Check if currentUser is null instead of isAuthenticated
+  if (!currentUser) {
     return <Navigate to="/login" />;
+  }
+
+  if (superAdminOnly && !isSuperAdmin) {
+    return <Navigate to="/" />;
   }
 
   if (adminOnly && !isAdmin) {

@@ -5,9 +5,13 @@ import { useCart } from '../context/CartContext';
 import '../styles/CartModal.css';
 
 const CartModal = ({ isOpen, onClose }) => {
-  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
-
+  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart, stockError, clearStockError } = useCart();
+  
   if (!isOpen) return null;
+  
+  const handleQuantityChange = (productId, newQuantity, stockQuantity) => {
+    updateQuantity(productId, newQuantity, stockQuantity);
+  };
 
   return (
     <div className="cart-modal-overlay" onClick={onClose}>
@@ -20,7 +24,7 @@ const CartModal = ({ isOpen, onClose }) => {
         {cart.length === 0 ? (
           <div className="empty-cart">
             <p>Your cart is empty</p>
-            <Link to="/products" className="btn-primary">Shop Now</Link>
+            <Link to="/products" className="btn-primary" onClick={onClose}>Shop Now</Link>
           </div>
         ) : (
           <>
@@ -31,10 +35,23 @@ const CartModal = ({ isOpen, onClose }) => {
                   <div className="cart-item-details">
                     <h3>{item.title}</h3>
                     <p>UGX {item.price.toLocaleString()}</p>
+                    <div className="stock-info">
+                      Stock: {item.stock_quantity} available
+                    </div>
                     <div className="quantity-controls">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                      <button 
+                        onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.stock_quantity)}
+                        disabled={item.quantity <= 1}
+                      >
+                        -
+                      </button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                      <button 
+                        onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.stock_quantity)}
+                        disabled={item.quantity >= item.stock_quantity}
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
                   <button 
@@ -47,13 +64,21 @@ const CartModal = ({ isOpen, onClose }) => {
               ))}
             </div>
             
+            {/* Display stock error if any */}
+            {stockError && (
+              <div className="cart-stock-error">
+                <p>{stockError.message}</p>
+                <button onClick={clearStockError} className="close-error-btn">×</button>
+              </div>
+            )}
+            
             <div className="cart-footer">
               <div className="cart-total">
                 <h3>Total: UGX {cartTotal.toLocaleString()}</h3>
               </div>
               <div className="cart-actions">
                 <button className="btn-secondary" onClick={clearCart}>Clear Cart</button>
-                <Link to="/order" className="btn-primary">Proceed to Checkout</Link> 
+                <Link to="/order" className="btn-primary" onClick={onClose}>Proceed to Checkout</Link>
               </div>
             </div>
           </>

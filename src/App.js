@@ -1,3 +1,4 @@
+// App.js
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -16,7 +17,8 @@ import './App.css';
 import Cart from './components/Cart';
 import CheckoutForm from './pages/CheckoutForm';
 import OrderConfirmation from './components/OrderConfirmation';
-// import DebugInfo from './components/DebugInfo';
+import CustomerProfile from './pages/CustomerProfile';
+
 // Admin Components
 import AdminLayout from './components/admin/AdminLayout';
 import AuthRoute from './components/AuthRoute';
@@ -30,6 +32,19 @@ import Dashboard from './components/admin/Dashboard';
 import AdminProfile from './components/admin/AdminProfile';
 import PromotionsManagement from './components/admin/PromotionsManagement';
 
+// Create a Layout component for customer pages
+const CustomerLayout = ({ children }) => (
+  <>
+    <Header />
+    <CartModal />
+    <CartNotification />
+    <main className="main-content">
+      {children}
+    </main>
+    <Footer />
+  </>
+);
+
 function App() {
   return (
     <AuthProvider>
@@ -37,7 +52,7 @@ function App() {
         <Router>
           <div className="app">
             <Routes>
-              {/* Admin Routes - Check these first */}
+              {/* Admin Routes */}
               <Route path="/admin/*" element={
                 <AuthRoute adminOnly>
                   <AdminLayout>
@@ -48,7 +63,12 @@ function App() {
                       <Route path="orders" element={<OrderManagement />} />
                       <Route path="promotions" element={<PromotionsManagement />} />
                       <Route path="feedback" element={<FeedbackManagement />} />
-                      <Route path="admins" element={<AdminManagement />} />
+                      {/* Superadmin only routes */}
+                      <Route path="admins" element={
+                        <AuthRoute superAdminOnly>
+                          <AdminManagement />
+                        </AuthRoute>
+                      } />
                       <Route path="contact" element={<ContactSettings />} />
                       <Route path="profile" element={<AdminProfile />} />
                       <Route path="*" element={<Dashboard />} />
@@ -58,40 +78,75 @@ function App() {
               } />
               
               {/* Customer Routes */}
-              <Route path="/*" element={
-                <>
-                  <Header />
-                  <CartModal />
-                  <CartNotification />
-                  <main className="main-content">
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/health-tips" element={<HealthTips />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/signup" element={<Signup />} />
-                      <Route path="/cart" element={<Cart />} />
-                      <Route path="/checkout" element={
-                        <AuthRoute>
-                          <CheckoutForm />
-                        </AuthRoute>
-                      } />
-                      <Route path="/order-confirmation" element={
-                        <AuthRoute>
-                          <OrderConfirmation />
-                        </AuthRoute>
-                      } />
-                    </Routes>
-                  </main>\
-                  <Footer />
-                </>
+              <Route path="/" element={
+                <CustomerLayout>
+                  <Home />
+                </CustomerLayout>
+              } />
+              <Route path="/about" element={
+                <CustomerLayout>
+                  <About />
+                </CustomerLayout>
+              } />
+              <Route path="/products" element={
+                <CustomerLayout>
+                  <Products />
+                </CustomerLayout>
+              } />
+              <Route path="/contact" element={
+                <CustomerLayout>
+                  <Contact />
+                </CustomerLayout>
+              } />
+              <Route path="/health-tips" element={
+                <CustomerLayout>
+                  <HealthTips />
+                </CustomerLayout>
+              } />
+              <Route path="/login" element={
+                <CustomerLayout>
+                  <Login />
+                </CustomerLayout>
+              } />
+              <Route path="/signup" element={
+                <CustomerLayout>
+                  <Signup />
+                </CustomerLayout>
+              } />
+              <Route path="/cart" element={
+                <CustomerLayout>
+                  <Cart />
+                </CustomerLayout>
+              } />
+              <Route path="/checkout" element={
+                <AuthRoute>
+                  <CustomerLayout>
+                    <CheckoutForm />
+                  </CustomerLayout>
+                </AuthRoute>
+              } />
+              <Route path="/order-confirmation" element={
+                <AuthRoute>
+                  <CustomerLayout>
+                    <OrderConfirmation />
+                  </CustomerLayout>
+                </AuthRoute>
+              } />
+              <Route path="/account" element={
+                <AuthRoute>
+                  <CustomerLayout>
+                    <CustomerProfile />
+                  </CustomerLayout>
+                </AuthRoute>
+              } />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={
+                <CustomerLayout>
+                  <Home />
+                </CustomerLayout>
               } />
             </Routes>
-            
-            {/* Temporary Debug Info */}
-            {/* <DebugInfo /> */}
           </div>
         </Router>
       </CartProvider>

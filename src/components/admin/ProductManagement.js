@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+// src/components/admin/ProductManagement.js
+import React, { useState, useEffect } from 'react';
 import { 
   Grid, 
   Card, 
@@ -31,26 +32,24 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
+  Alert,
+  FormHelperText,
+  Divider,
+  Avatar,
+  Stack
 } from '@mui/material';
 import { Search, Add, Edit, Delete, Category, AttachMoney, Inventory, 
-        ShoppingCart, Filter, Sort, ViewModule, ViewList } from '@mui/icons-material';
-import { themeColors } from '../../theme/Colors';
-
-// Import your product images directly
-import appleImage from '../../images/apple_order_page.jpg';
-import bananaImage from '../../images/b_order_pg.jpg';
-import orangeImage from '../../images/oranges_pdt_pg.jpg';
-import carrotJuiceImage from '../../images/order_pg.jpg';
-import blueberryImage from '../../images/smoothie.png';
-import pineappleJuiceImage from '../../images/jui_order_pg.jpg';
-import beetrootJuiceImage from '../../images/beetroot juice_order_pg.jpg';
-import mangoImage from '../../images/order_page_background.jpg';
-import watermelonImage from '../../images/watermelon_order_pg.jpg';
+        ShoppingCart, Filter, Sort, ViewModule, ViewList, Save, Cancel, CloudUpload } from '@mui/icons-material';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import productAPI from '../../api/ProductAPI';
 
 const ProductManagement = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { token, setToken } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,102 +58,76 @@ const ProductManagement = () => {
   const [currentProduct, setCurrentProduct] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [formErrors, setFormErrors] = useState({});
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   
+  // Updated categories with green colors
   const categories = [
-    { name: 'Fruits', color: themeColors.primary.main },
-    { name: 'Vegetables', color: themeColors.status.success },
-    { name: 'Juices', color: themeColors.secondary.main },
-    { name: 'Salads', color: themeColors.accent.main },
-    { name: 'Desserts', color: themeColors.status.warning },
+    { name: 'Fresh Fruits', color: '#4CAF50' }, // Green
+    { name: 'Natural Juices', color: '#8BC34A' }, // Light Green
+    { name: 'Dried Fruits', color: '#009688' }, // Teal
+    { name: 'Detox Juice Packages', color: '#00BCD4' }, // Cyan
   ];
+
+  // Check token expiration and redirect if expired
+  useEffect(() => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    try {
+      // Decode JWT to get expiration time
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiryTime = payload.exp * 1000; // Convert to milliseconds
+      
+      // Check if token is already expired
+      if (Date.now() > expiryTime) {
+        handleTokenExpired();
+        return;
+      }
+      
+      // Set up a timer to check token expiration
+      const timeUntilExpiry = expiryTime - Date.now();
+      const timer = setTimeout(() => {
+        handleTokenExpired();
+      }, timeUntilExpiry);
+      
+      return () => clearTimeout(timer);
+    } catch (err) {
+      console.error('Error decoding token:', err);
+      handleTokenExpired();
+    }
+  }, [token, navigate]);
+
+  const handleTokenExpired = () => {
+    setToken(null);
+    // Immediately redirect to login without showing a message
+    navigate('/login');
+  };
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
+    if (!token) return;
+    
     try {
-      // Mock data for now - using image paths instead of imported objects
-      setProducts([
-        { 
-          id: 1, 
-          name: 'Fresh Apples', 
-          description: 'Crisp and juicy red apples', 
-          price: 2.99,
-          category: 'Fruits', 
-          stock_quantity: 16, 
-          image: appleImage
-        },
-        { 
-          id: 2, 
-          name: 'Organic Bananas', 
-          description: 'Sweet and ripe organic bananas', 
-          price: 1.49, 
-          category: 'Fruits', 
-          stock_quantity: 15, 
-          image: bananaImage
-        },
-        { 
-          id: 3, 
-          name: 'Fresh Oranges', 
-          description: 'Juicy and vitamin-rich oranges', 
-          price: 3.49, 
-          category: 'Fruits', 
-          stock_quantity: 30, 
-          image: orangeImage
-        },
-        
-  
-        { 
-          id: 6, 
-          name: 'Mixed Berries', 
-          description: 'Assorted fresh berries', 
-          price: 6.99, 
-          category: 'Fruits', 
-          stock_quantity: 5, 
-          image: blueberryImage
-        },
-        { 
-          id: 7, 
-          name: 'Pineapple Juice', 
-          description: 'Tropical pineapple juice', 
-          price: 4.99, 
-          category: 'Juices', 
-          stock_quantity: 18, 
-          image: pineappleJuiceImage
-        },
-        { 
-          id: 8, 
-          name: 'Beetroot Juice', 
-          description: 'Powerful and healthy beetroot juice', 
-          price: 5.99, 
-          category: 'Juices', 
-          stock_quantity: 15, 
-          image: beetrootJuiceImage
-        },
-        { 
-          id: 9, 
-          name: 'Mango Smoothie', 
-          description: 'Sweet and creamy mango smoothie', 
-          price: 4.99, 
-          category: 'Desserts', 
-          stock_quantity: 10, 
-          image: mangoImage
-        },
-        { 
-          id: 10, 
-          name: 'Watermelon Juice', 
-          description: 'Refreshing watermelon juice', 
-          price: 4.99, 
-          category: 'Juices', 
-          stock_quantity: 20, 
-          image: watermelonImage
-        },
-      ]);
-      setLoading(false);
+      setLoading(true);
+      const productsData = await productAPI.getAllProducts(token);
+      setProducts(productsData);
+      setError(null);
     } catch (error) {
       console.error('Error fetching products:', error);
+      if (error.response && error.response.status === 401) {
+        handleTokenExpired();
+      } else {
+        setError('Failed to fetch products');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -173,60 +146,204 @@ const ProductManagement = () => {
       price: '', 
       category: '', 
       stock_quantity: 0,
-      image: '/images/product-placeholder.jpg' // Default image
+      image_url: '',
+      image: null
     });
+    setImagePreview(product && product.image_url ? `http://localhost:5000${product.image_url}` : '');
     setIsEditing(!!product);
+    setFormErrors({});
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
     setCurrentProduct(null);
+    setImagePreview('');
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCurrentProduct(prevProduct => ({
+        ...(prevProduct || { 
+          name: '', 
+          description: '', 
+          price: '', 
+          category: '', 
+          stock_quantity: 0,
+          image_url: '',
+          image: null
+        }),
+        image: file
+      }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setCurrentProduct(prevProduct => ({
+      ...prevProduct,
+      image: null,
+      image_url: ''
+    }));
+    setImagePreview('');
+  };
+
+  const validateForm = () => {
+    if (!currentProduct) {
+      setFormErrors({ general: 'No product data' });
+      return false;
+    }
+    
+    const errors = {};
+    
+    if (!currentProduct.name || !currentProduct.name.trim()) {
+      errors.name = 'Product name is required';
+    }
+    
+    if (!currentProduct.price) {
+      errors.price = 'Price is required';
+    } else if (isNaN(currentProduct.price) || parseFloat(currentProduct.price) <= 0) {
+      errors.price = 'Price must be a positive number';
+    }
+    
+    if (!currentProduct.category) {
+      errors.category = 'Category is required';
+    }
+    
+    if (currentProduct.stock_quantity === undefined || currentProduct.stock_quantity === null) {
+      errors.stock_quantity = 'Stock quantity is required';
+    } else if (isNaN(currentProduct.stock_quantity) || parseInt(currentProduct.stock_quantity) < 0) {
+      errors.stock_quantity = 'Stock quantity must be a non-negative number';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSave = async () => {
-    setSubmitting(true);
+    if (!currentProduct || !validateForm()) {
+      return;
+    }
+    
     try {
+      setSubmitting(true);
+      setError(null);
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('name', currentProduct.name);
+      formData.append('description', currentProduct.description);
+      formData.append('price', parseFloat(currentProduct.price));
+      formData.append('category', currentProduct.category);
+      formData.append('stock_quantity', parseInt(currentProduct.stock_quantity));
+      
+      // Only append image if it exists and is a File object
+      if (currentProduct.image instanceof File) {
+        formData.append('image', currentProduct.image);
+      }
+      
       if (isEditing) {
-        setProducts(products.map(p => p.id === currentProduct.id ? currentProduct : p));
+        await productAPI.updateProduct(currentProduct.id, formData, token);
+        setSuccess('Product updated successfully');
       } else {
-        setProducts([...products, { ...currentProduct, id: products.length + 1 }]);
+        await productAPI.createProduct(formData, token);
+        setSuccess('Product created successfully');
       }
       handleClose();
-    } catch (error) {
-      console.error('Error saving product:', error);
+      fetchProducts();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error saving product:', err);
+      if (err.response && err.response.status === 401) {
+        handleTokenExpired();
+      } else {
+        setError(err.response?.data?.error || 'Failed to save product');
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id) => {
-    try {
-      setProducts(products.filter(product => product.id !== id));
-    } catch (error) {
-      console.error('Error deleting product:', error);
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await productAPI.deleteProduct(id, token);
+        setSuccess('Product deleted successfully');
+        fetchProducts();
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(null), 3000);
+      } catch (err) {
+        console.error('Error deleting product:', err);
+        if (err.response && err.response.status === 401) {
+          handleTokenExpired();
+        } else {
+          setError(err.response?.data?.error || 'Failed to delete product');
+        }
+      }
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCurrentProduct({ ...currentProduct, [name]: value });
+    setCurrentProduct(prevProduct => ({
+      ...(prevProduct || { 
+        name: '', 
+        description: '', 
+        price: '', 
+        category: '', 
+        stock_quantity: 0,
+        image_url: '',
+        image: null
+      }),
+      [name]: value
+    }));
+    
+    // Clear error when field is edited
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: null
+      });
+    }
   };
 
   const getCategoryInfo = (categoryName) => {
-    return categories.find(cat => cat.name === categoryName) || { color: themeColors.primary.main };
+    return categories.find(cat => cat.name === categoryName) || { color: '#4CAF50' };
   };
 
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress size={60} sx={{ color: themeColors.primary.main }} />
+        <CircularProgress size={60} sx={{ color: '#4CAF50' }} />
       </Box>
     );
   }
 
   return (
     <Box>
+      {/* Success/Error Messages */}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
+      
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
       {/* Header */}
       <Box sx={{ 
         display: 'flex', 
@@ -234,10 +351,10 @@ const ProductManagement = () => {
         alignItems: 'center', 
         mb: 3,
         pb: 2,
-        borderBottom: `1px solid ${themeColors.neutral.divider}`
+        borderBottom: `1px solid #e0e0e0`
       }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', color: themeColors.primary.main }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
             Product Management
           </Typography>
           <Typography variant="body2" color="textSecondary">
@@ -266,7 +383,7 @@ const ProductManagement = () => {
       </Box>
       
       {/* Search and Filter */}
-      <Paper sx={{ p: 2, mb: 3, borderRadius: '16px', boxShadow: themeColors.shadow.light }}>
+      <Paper sx={{ p: 2, mb: 3, borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
         <Grid container spacing={2}>
           <Grid item xs={12} md={8}>
             <TextField
@@ -277,18 +394,18 @@ const ProductManagement = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search sx={{ color: themeColors.neutral.text.secondary }} />
+                    <Search sx={{ color: '#757575' }} />
                   </InputAdornment>
                 ),
                 sx: {
                   borderRadius: '12px',
-                  backgroundColor: themeColors.neutral.surface,
+                  backgroundColor: '#f9f9f9',
                   '&:hover': {
-                    borderColor: themeColors.primary.main,
+                    borderColor: '#4CAF50',
                   },
                   '&.Mui-focused': {
-                    borderColor: themeColors.primary.main,
-                    boxShadow: `0 0 0 2px rgba(46, 125, 50, 0.2)`,
+                    borderColor: '#4CAF50',
+                    boxShadow: `0 0 0 2px rgba(76, 175, 80, 0.2)`,
                   },
                 }
               }}
@@ -329,11 +446,11 @@ const ProductManagement = () => {
                   display: 'flex', 
                   flexDirection: 'column',
                   borderRadius: '16px',
-                  boxShadow: themeColors.shadow.light,
+                  boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
                   transition: 'transform 0.3s, box-shadow 0.3s',
                   '&:hover': { 
                     transform: 'translateY(-5px)', 
-                    boxShadow: themeColors.shadow.hover,
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
                   },
                   overflow: 'hidden',
                   position: 'relative'
@@ -353,6 +470,10 @@ const ProductManagement = () => {
                         color: categoryInfo.color,
                         fontWeight: 'bold',
                         borderRadius: '6px',
+                        '& .MuiChip-label': {
+                          px: 1,
+                          color: categoryInfo.color,
+                        }
                       }}
                     />
                   </Box>
@@ -376,13 +497,13 @@ const ProductManagement = () => {
                         }
                       }}
                     >
-                      <Inventory sx={{ color: themeColors.neutral.text.secondary }} />
+                      <Inventory sx={{ color: '#757575' }} />
                     </Badge>
                   </Box>
                   
                   <CardMedia
                     component="img"
-                    image={product.image || '/images/product-placeholder.jpg'}
+                    image={product.image_url ? `http://localhost:5000${product.image_url}` : '/images/product-placeholder.jpg'}
                     alt={product.name}
                     sx={{ 
                       height: 160, 
@@ -391,7 +512,7 @@ const ProductManagement = () => {
                     }}
                   />
                   <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
-                    <Typography gutterBottom variant="h6" component="div" fontWeight="bold" color={themeColors.neutral.text.primary}>
+                    <Typography gutterBottom variant="h6" component="div" fontWeight="bold" color="#333">
                       {product.name}
                     </Typography>
                     <Typography variant="body2" color="textSecondary" sx={{ mb: 1, flexGrow: 1 }}>
@@ -399,12 +520,12 @@ const ProductManagement = () => {
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
                       <Typography variant="h6" color={categoryInfo.color} fontWeight="bold">
-                        ${product.price}
+                        UGX {parseFloat(product.price).toFixed(2)}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Inventory fontSize="small" sx={{ mr: 0.5, color: themeColors.neutral.text.secondary }} />
+                        <Inventory fontSize="small" sx={{ mr: 0.5, color: '#757575' }} />
                         <Typography variant="body2" color="textSecondary">
                           Stock: {product.stock_quantity}
                         </Typography>
@@ -415,13 +536,13 @@ const ProductManagement = () => {
                     p: 1, 
                     display: 'flex', 
                     justifyContent: 'space-between', 
-                    backgroundColor: themeColors.primary.lighter 
+                    backgroundColor: '#f5f5f5'
                   }}>
                     <IconButton 
                       onClick={() => handleOpen(product)} 
                       sx={{ 
-                        color: themeColors.primary.main,
-                        '&:hover': { backgroundColor: `${themeColors.primary.main}10` }
+                        color: '#4CAF50',
+                        '&:hover': { backgroundColor: 'rgba(76, 175, 80, 0.1)' }
                       }}
                     >
                       <Edit />
@@ -429,8 +550,8 @@ const ProductManagement = () => {
                     <IconButton 
                       onClick={() => handleDelete(product.id)} 
                       sx={{ 
-                        color: themeColors.status.error,
-                        '&:hover': { backgroundColor: `${themeColors.status.error}10` }
+                        color: '#f44336',
+                        '&:hover': { backgroundColor: 'rgba(244, 67, 54, 0.1)' }
                       }}
                     >
                       <Delete />
@@ -442,28 +563,28 @@ const ProductManagement = () => {
           })}
         </Grid>
       ) : (
-        <Card sx={{ borderRadius: '16px', overflow: 'hidden', boxShadow: themeColors.shadow.light }}>
+        <Card sx={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 6px 18px rgba(0,0,0,0.1)' }}>
           <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
             <Table stickyHeader>
-              <TableHead sx={{ backgroundColor: themeColors.primary.lighter }}>
+              <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold', color: themeColors.primary.dark }}>Product</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: themeColors.primary.dark }}>Category</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: themeColors.primary.dark }}>Price</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: themeColors.primary.dark }}>Stock</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: themeColors.primary.dark }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Product</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Category</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Price (UGX)</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Stock</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: '#4CAF50' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredProducts.map((product) => {
                   const categoryInfo = getCategoryInfo(product.category);
                   return (
-                    <TableRow key={product.id} hover sx={{ '&:hover': { backgroundColor: themeColors.primary.lighter } }}>
+                    <TableRow key={product.id} hover sx={{ '&:hover': { backgroundColor: '#f9f9f9' } }}>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Box 
                             component="img"
-                            src={product.image || '/images/product-placeholder.jpg'}
+                            src={product.image_url ? `http://localhost:5000${product.image_url}` : '/images/product-placeholder.jpg'}
                             alt={product.name}
                             sx={{ 
                               width: 50, 
@@ -492,17 +613,21 @@ const ProductManagement = () => {
                             color: categoryInfo.color,
                             fontWeight: 'bold',
                             borderRadius: '6px',
+                            '& .MuiChip-label': {
+                              px: 1,
+                              color: categoryInfo.color,
+                            }
                           }}
                         />
                       </TableCell>
                       <TableCell>
                         <Typography variant="body1" sx={{ fontWeight: 'bold', color: categoryInfo.color }}>
-                          ${product.price}
+                          UGX {parseFloat(product.price).toFixed(2)}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Inventory fontSize="small" sx={{ mr: 0.5, color: themeColors.neutral.text.secondary }} />
+                          <Inventory fontSize="small" sx={{ mr: 0.5, color: '#757575' }} />
                           <Typography variant="body2" color="textSecondary">
                             {product.stock_quantity}
                           </Typography>
@@ -512,8 +637,8 @@ const ProductManagement = () => {
                         <IconButton 
                           onClick={() => handleOpen(product)} 
                           sx={{ 
-                            color: themeColors.primary.main,
-                            '&:hover': { backgroundColor: `${themeColors.primary.main}10` }
+                            color: '#4CAF50',
+                            '&:hover': { backgroundColor: 'rgba(76, 175, 80, 0.1)' }
                           }}
                         >
                           <Edit />
@@ -521,8 +646,8 @@ const ProductManagement = () => {
                         <IconButton 
                           onClick={() => handleDelete(product.id)} 
                           sx={{ 
-                            color: themeColors.status.error,
-                            '&:hover': { backgroundColor: `${themeColors.status.error}10` }
+                            color: '#f44336',
+                            '&:hover': { backgroundColor: 'rgba(244, 67, 54, 0.1)' }
                           }}
                         >
                           <Delete />
@@ -546,9 +671,9 @@ const ProductManagement = () => {
           position: 'fixed',
           bottom: 24,
           right: 24,
-          background: themeColors.gradient.primary,
+          background: '#4CAF50',
           '&:hover': {
-            background: themeColors.primary.dark,
+            background: '#388E3C',
           }
         }}
       >
@@ -564,14 +689,14 @@ const ProductManagement = () => {
         sx={{
           '& .MuiDialog-paper': {
             borderRadius: '16px',
-            boxShadow: themeColors.shadow.medium,
+            boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
             overflow: 'hidden'
           }
         }}
       >
         <DialogTitle sx={{ 
-          background: themeColors.gradient.primary,
-          color: themeColors.neutral.text.light,
+          background: '#4CAF50',
+          color: 'white',
           py: 2,
           px: 3,
           display: 'flex',
@@ -580,102 +705,179 @@ const ProductManagement = () => {
           {isEditing ? 'Edit Product' : 'Add New Product'}
         </DialogTitle>
         <DialogContent sx={{ p: 3 }}>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                name="name"
-                label="Product Name"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={currentProduct?.name || ''}
-                onChange={handleChange}
-                InputProps={{
-                  sx: {
-                    borderRadius: '12px',
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                name="description"
-                label="Description"
-                type="text"
-                fullWidth
-                variant="outlined"
-                multiline
-                rows={3}
-                value={currentProduct?.description || ''}
-                onChange={handleChange}
-                InputProps={{
-                  sx: {
-                    borderRadius: '12px',
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="price"
-                label="Price ($)"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={currentProduct?.price || ''}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AttachMoney sx={{ color: themeColors.neutral.text.secondary }} />
-                    </InputAdornment>
-                  ),
-                  sx: {
-                    borderRadius: '12px',
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="stock_quantity"
-                label="Stock Quantity"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={currentProduct?.stock_quantity || ''}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Inventory sx={{ color: themeColors.neutral.text.secondary }} />
-                    </InputAdornment>
-                  ),
-                  sx: {
-                    borderRadius: '12px',
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  name="category"
-                  value={currentProduct?.category || ''}
-                  label="Category"
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            {/* Left Column */}
+            <Grid item xs={12} md={6}>
+              <Stack spacing={2}>
+                <TextField
+                  name="name"
+                  label="Product Name"
+                  type="text"
+                  fullWidth
+                  variant="outlined"
+                  value={currentProduct?.name || ''}
                   onChange={handleChange}
-                  sx={{
-                    borderRadius: '12px',
+                  error={!!formErrors.name}
+                  helperText={formErrors.name}
+                  InputProps={{
+                    sx: {
+                      borderRadius: '12px',
+                    }
                   }}
-                >
-                  {categories.map(category => (
-                    <MenuItem key={category.name} value={category.name}>
-                      {category.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                />
+                
+                <FormControl fullWidth error={!!formErrors.category}>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    name="category"
+                    value={currentProduct?.category || ''}
+                    label="Category"
+                    onChange={handleChange}
+                    sx={{
+                      borderRadius: '12px',
+                    }}
+                  >
+                    {categories.map(category => (
+                      <MenuItem key={category.name} value={category.name}>
+                        {category.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {formErrors.category && <FormHelperText>{formErrors.category}</FormHelperText>}
+                </FormControl>
+                
+                <TextField
+                  name="price"
+                  label="Price (UGX)"
+                  type="number"
+                  fullWidth
+                  variant="outlined"
+                  value={currentProduct?.price || ''}
+                  onChange={handleChange}
+                  error={!!formErrors.price}
+                  helperText={formErrors.price}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AttachMoney sx={{ color: '#757575' }} />
+                      </InputAdornment>
+                    ),
+                    sx: {
+                      borderRadius: '12px',
+                    }
+                  }}
+                />
+                
+                <TextField
+                  name="stock_quantity"
+                  label="Stock Quantity"
+                  type="number"
+                  fullWidth
+                  variant="outlined"
+                  value={currentProduct?.stock_quantity || ''}
+                  onChange={handleChange}
+                  error={!!formErrors.stock_quantity}
+                  helperText={formErrors.stock_quantity}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Inventory sx={{ color: '#757575' }} />
+                      </InputAdornment>
+                    ),
+                    sx: {
+                      borderRadius: '12px',
+                    }
+                  }}
+                />
+              </Stack>
+            </Grid>
+            
+            {/* Right Column */}
+            <Grid item xs={12} md={6}>
+              <Stack spacing={2}>
+                <TextField
+                  name="description"
+                  label="Description"
+                  type="text"
+                  fullWidth
+                  variant="outlined"
+                  multiline
+                  rows={4}
+                  value={currentProduct?.description || ''}
+                  onChange={handleChange}
+                  InputProps={{
+                    sx: {
+                      borderRadius: '12px',
+                    }
+                  }}
+                />
+                
+                <Divider />
+                
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Product Image
+                </Typography>
+                
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {imagePreview ? (
+                    <Avatar
+                      src={imagePreview}
+                      variant="rounded"
+                      sx={{ 
+                        width: 200, 
+                        height: 200, 
+                        mb: 2,
+                        border: `1px solid #e0e0e0`
+                      }}
+                    />
+                  ) : (
+                    <Avatar
+                      variant="rounded"
+                      sx={{ 
+                        width: 200, 
+                        height: 200, 
+                        mb: 2,
+                        backgroundColor: '#f9f9f9',
+                        border: `1px dashed #e0e0e0`
+                      }}
+                    >
+                      <CloudUpload sx={{ fontSize: 60, color: '#bdbdbd' }} />
+                    </Avatar>
+                  )}
+                  
+                  <Stack direction="row" spacing={2}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      style={{ display: 'none' }}
+                      id="product-image-upload"
+                    />
+                    <label htmlFor="product-image-upload">
+                      <Button 
+                        variant="outlined" 
+                        component="span"
+                        startIcon={<CloudUpload />}
+                        sx={{ borderRadius: '12px' }}
+                      >
+                        {imagePreview ? 'Change Image' : 'Upload Image'}
+                      </Button>
+                    </label>
+                    
+                    {imagePreview && (
+                      <Button 
+                        variant="outlined" 
+                        color="error"
+                        onClick={handleRemoveImage}
+                        startIcon={<Cancel />}
+                        sx={{ borderRadius: '12px' }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </Stack>
+                </Box>
+              </Stack>
             </Grid>
           </Grid>
         </DialogContent>
@@ -693,9 +895,10 @@ const ProductManagement = () => {
           <Button 
             onClick={handleSave} 
             variant="contained" 
+            startIcon={<Save />}
             sx={{ 
-              background: themeColors.gradient.primary,
-              '&:hover': { background: themeColors.primary.dark },
+              background: '#4CAF50',
+              '&:hover': { background: '#388E3C' },
               borderRadius: '12px',
               px: 3,
               py: 1,
@@ -703,7 +906,7 @@ const ProductManagement = () => {
             }}
             disabled={submitting}
           >
-            {submitting ? <CircularProgress size={20} /> : (isEditing ? 'Update' : 'Add')}
+            {submitting ? <CircularProgress size={20} /> : (isEditing ? 'Update Product' : 'Add Product')}
           </Button>
         </DialogActions>
       </Dialog>

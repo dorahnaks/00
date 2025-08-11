@@ -1,3 +1,4 @@
+// Login.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +9,6 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loginMode, setLoginMode] = useState('customer');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -21,14 +21,13 @@ const Login = () => {
       console.log(`=== LOGIN FORM SUBMIT ===`);
       console.log(`Email: ${email}`);
       console.log(`Password: ${password ? '***' : 'EMPTY'}`);
-      console.log(`Mode: ${loginMode}`);
       
-      const result = await login(email, password, loginMode === 'admin');
+      const result = await login(email, password);
       console.log("=== LOGIN RESULT ===");
       console.log("Result:", result);
       
-      // Redirect immediately after successful login
-      if (result.role === 'admin') {
+      // Redirect based on role
+      if (result.role === 'admin' || result.role === 'superadmin') {
         console.log("Redirecting to admin dashboard");
         navigate('/admin/dashboard', { replace: true });
       } else {
@@ -46,40 +45,12 @@ const Login = () => {
     }
   };
 
-  const toggleLoginMode = (mode) => {
-    console.log(`=== TOGGLE LOGIN MODE ===`);
-    console.log(`New mode: ${mode}`);
-    setLoginMode(mode);
-    setError('');
-    setEmail('');
-    setPassword('');
-  };
-
   return (
     <div className="auth-container">
       <div className="auth-form-container">
         <div className="auth-header">
           <h1>Welcome Back</h1>
           <p>Login to your account to continue</p>
-        </div>
-        
-        <div className="auth-mode-selector">
-          <div className="mode-toggle">
-            <button 
-              type="button" 
-              className={`mode-btn ${loginMode === 'customer' ? 'active' : ''}`}
-              onClick={() => toggleLoginMode('customer')}
-            >
-              <i className="fas fa-user"></i> Customer
-            </button>
-            <button 
-              type="button" 
-              className={`mode-btn ${loginMode === 'admin' ? 'active' : ''}`}
-              onClick={() => toggleLoginMode('admin')}
-            >
-              <i className="fas fa-user-shield"></i> Admin
-            </button>
-          </div>
         </div>
         
         {error && (
@@ -99,7 +70,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder={loginMode === 'admin' ? "admin@yourdomain.com" : "your@email.com"}
+                placeholder="your@email.com"
               />
             </div>
           </div>
@@ -131,7 +102,7 @@ const Login = () => {
           
           <button 
             type="submit" 
-            className={`auth-button ${loginMode === 'admin' ? 'admin-btn' : ''}`}
+            className="auth-button"
             disabled={loading}
           >
             {loading ? (
@@ -141,15 +112,7 @@ const Login = () => {
               </>
             ) : (
               <>
-                {loginMode === 'admin' ? (
-                  <>
-                    <i className="fas fa-sign-in-alt"></i> Login as Admin
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-sign-in-alt"></i> Login as Customer
-                  </>
-                )}
+                <i className="fas fa-sign-in-alt"></i> Login
               </>
             )}
           </button>
@@ -157,20 +120,8 @@ const Login = () => {
         
         <div className="auth-footer">
           <p>Don't have an account? <Link to="/signup" className="signup-link">Sign Up</Link></p>
-          
-          {loginMode === 'admin' && (
-            <div className="admin-login-info">
-              <div className="info-header">
-                <i className="fas fa-info-circle"></i>
-                <h3>Admin Information</h3>
-              </div>
-              <p>Use your admin credentials to access the admin dashboard.</p>
-              <p>If you don't have admin access, please contact your system administrator.</p>
-            </div>
-          )}
         </div>
       </div>
-      
       <div className="auth-image">
         <div className="auth-image-content">
           <h2>Fresh Fruits & Juices</h2>

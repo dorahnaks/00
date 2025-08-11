@@ -2,11 +2,13 @@
   padding: 20px 120px 40px 120px;
   max-width: 100%;
   max-height: 100%;
-  margin: auto;
+  /* margin: auto; */
   font-family: 'Arial', sans-serif;
   background: url('../images/pdt_pg_bg.jpg') no-repeat center center;
   background-size: cover;
   color: #fff;
+  border-radius: 20px;
+  margin-top: 0;
 }
 
 .contact-heading {
@@ -40,10 +42,12 @@
 
 .contact-info {
   background: rgba(0, 0, 0, 0.6);
-  color: white;
+  color: rgb(248, 244, 244);
   backdrop-filter: blur(6px);
 }
-
+.contact-info h2 {
+  color: #fff;
+}
 .contact-form-container {
   background-color: #fff;
   color: #000;
@@ -99,6 +103,37 @@
 .clock-icon {
   background-image: url('../images/icon_wh.png');
 
+}
+/* src/styles/Contact.css */
+/* Add these styles for the map container */
+
+.map-container {
+  margin-top: 10px;
+}
+
+.map-link {
+  display: inline-block;
+  color: #FF6B35;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.map-link:hover {
+  text-decoration: underline;
+}
+
+.map-preview {
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Ensure the map is responsive */
+@media (max-width: 768px) {
+  .map-preview {
+    height: 150px;
+  }
 }
 
 @media (max-width: 768px) {

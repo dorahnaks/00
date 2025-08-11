@@ -1,19 +1,16 @@
+// src/components/admin/ContactSettings.js
 import React, { useState, useEffect } from 'react';
 import { 
-  Paper, 
   TextField, 
   Button, 
   Typography, 
   Box, 
   Grid, 
-  IconButton,
   InputAdornment,
   Divider,
   CircularProgress,
   Card,
   CardContent,
-  useMediaQuery,
-  useTheme,
   Chip
 } from '@mui/material';
 import { 
@@ -21,21 +18,16 @@ import {
   Email, 
   LocationOn, 
   Map, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  LinkedIn,
   Save,
-  Cancel,
   Public,
-  Language,
   ContactPhone
 } from '@mui/icons-material';
+import { useAuth } from '../../context/AuthContext';
+import contactAPI from '../../api/ContactAPI';
 import { themeColors } from '../../theme/Colors';
 
 const ContactSettings = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { token } = useAuth();
   const [contactInfo, setContactInfo] = useState({
     phone: '',
     email: '',
@@ -51,6 +43,8 @@ const ContactSettings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchContactInfo();
@@ -58,19 +52,23 @@ const ContactSettings = () => {
 
   const fetchContactInfo = async () => {
     try {
-      // Mock data for now
+      setLoading(true);
+      const response = await contactAPI.getContactInfo();
+      
+      // Initialize with API data or defaults
       setContactInfo({
-        phone: '0700 000 000',
-        email: 'contact@fruitdesign.com',
-        location: 'Kampala, Uganda',
-        mapLink: 'https://maps.google.com/?q=123+Fruit+Street',
-        socialMedia: {
-          facebook: 'https://facebook.com/fruitdesign',
-          twitter: 'https://twitter.com/fruitdesign',
-          instagram: 'https://instagram.com/fruitdesign',
-          linkedin: 'https://linkedin.com/company/fruitdesign'
+        phone: response.phone || '',
+        email: response.email || '',
+        location: response.location || '',
+        mapLink: response.map_link || '',
+        socialMedia: response.social_media_links || {
+          facebook: '',
+          twitter: '',
+          instagram: '',
+          linkedin: ''
         }
       });
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching contact info:', error);
@@ -93,23 +91,49 @@ const ContactSettings = () => {
     });
   };
 
+// src/components/admin/ContactSettings.js
   const handleSave = async () => {
     setSubmitting(true);
+    setError(null);
+    
     try {
-      // In a real app, you would save to backend here
-      console.log('Saving contact info:', contactInfo);
+      // Prepare data for API - include social media links
+      const dataToSave = {
+        phone: contactInfo.phone,
+        email: contactInfo.email,
+        location: contactInfo.location,
+        map_link: contactInfo.mapLink,
+        social_media_links: contactInfo.socialMedia
+      };
+      
+      console.log('Saving contact info:', dataToSave);
+      console.log('Using token:', token);
+      
+      // Save to backend
+      const response = await contactAPI.updateContactInfo(dataToSave, token);
+      console.log('Save response:', response);
+      
+      setSuccess(true);
       setIsEditing(false);
-      alert('Contact information saved successfully!');
-    } catch (error) {
-      console.error('Error saving contact info:', error);
+      
+      // Reset success message after 3 seconds
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      console.error('Error saving contact info:', err);
+      if (err.response) {
+        console.error('Error response data:', err.response.data);
+        console.error('Error response status:', err.response.status);
+        console.error('Error response headers:', err.response.headers);
+      }
+      setError(err.response?.data?.error || err.message || 'Failed to update contact information');
     } finally {
       setSubmitting(false);
     }
   };
-
   const handleCancel = () => {
     fetchContactInfo();
     setIsEditing(false);
+    setError(null);
   };
 
   if (loading) {
@@ -146,6 +170,26 @@ const ContactSettings = () => {
           </Typography>
         </Box>
       </Box>
+      
+      {success && (
+        <Box sx={{ mb: 2 }}>
+          <Chip 
+            label="Contact information saved successfully!" 
+            color="success" 
+            sx={{ fontWeight: 'bold' }}
+          />
+        </Box>
+      )}
+      
+      {error && (
+        <Box sx={{ mb: 2 }}>
+          <Chip 
+            label={error} 
+            color="error" 
+            sx={{ fontWeight: 'bold' }}
+          />
+        </Box>
+      )}
       
       <Card sx={{ borderRadius: '16px', overflow: 'hidden', boxShadow: themeColors.shadow.light }}>
         <CardContent sx={{ p: 3 }}>
@@ -243,6 +287,9 @@ const ContactSettings = () => {
               <Typography variant="h6" gutterBottom sx={{ color: themeColors.primary.main, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
                 <Public sx={{ mr: 1 }} />
                 Social Media Links
+                <Typography variant="caption" sx={{ ml: 1, color: themeColors.neutral.text.secondary }}>
+                  
+                </Typography>
               </Typography>
               
               <TextField
@@ -255,7 +302,7 @@ const ContactSettings = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Facebook sx={{ color: themeColors.neutral.text.secondary }} />
+                      <Box component="span" sx={{ color: 'grey', fontWeight: 'bold' }}>f</Box>
                     </InputAdornment>
                   ),
                   sx: {
@@ -267,14 +314,14 @@ const ContactSettings = () => {
               <TextField
                 fullWidth
                 margin="normal"
-                label="Twitter"
+                label="X"
                 value={contactInfo.socialMedia.twitter}
                 onChange={(e) => handleSocialChange('twitter', e.target.value)}
                 disabled={!isEditing}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Twitter sx={{ color: themeColors.neutral.text.secondary }} />
+                      <Box component="span" sx={{ color: 'grey', fontWeight: 'bold' }}>𝕏</Box>
                     </InputAdornment>
                   ),
                   sx: {
@@ -293,7 +340,7 @@ const ContactSettings = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Instagram sx={{ color: themeColors.neutral.text.secondary }} />
+                      <Box component="span" sx={{ color: '#E1306C', fontWeight: 'bold' }}>📷</Box>
                     </InputAdornment>
                   ),
                   sx: {
@@ -312,7 +359,7 @@ const ContactSettings = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LinkedIn sx={{ color: themeColors.neutral.text.secondary }} />
+                      <Box component="span" sx={{ color: '#0077B5', fontWeight: 'bold' }}>in</Box>
                     </InputAdornment>
                   ),
                   sx: {
@@ -327,7 +374,6 @@ const ContactSettings = () => {
           
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h6" sx={{ color: themeColors.primary.main, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-              <Language sx={{ mr: 1 }} />
               Preview
             </Typography>
             
@@ -417,70 +463,6 @@ const ContactSettings = () => {
               >
                 View on Google Maps
               </Typography>
-            </Box>
-            
-            <Divider sx={{ my: 2 }} />
-            
-            <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold' }}>
-              Follow us on social media:
-            </Typography>
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <IconButton 
-                component="a" 
-                href={contactInfo.socialMedia.facebook} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                sx={{ 
-                  color: '#3b5998',
-                  backgroundColor: 'rgba(59, 89, 152, 0.1)',
-                  '&:hover': { backgroundColor: 'rgba(59, 89, 152, 0.2)' }
-                }}
-              >
-                <Facebook />
-              </IconButton>
-              
-              <IconButton 
-                component="a" 
-                href={contactInfo.socialMedia.twitter} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                sx={{ 
-                  color: '#1DA1F2',
-                  backgroundColor: 'rgba(29, 161, 242, 0.1)',
-                  '&:hover': { backgroundColor: 'rgba(29, 161, 242, 0.2)' }
-                }}
-              >
-                <Twitter />
-              </IconButton>
-              
-              <IconButton 
-                component="a" 
-                href={contactInfo.socialMedia.instagram} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                sx={{ 
-                  color: '#E1306C',
-                  backgroundColor: 'rgba(225, 48, 108, 0.1)',
-                  '&:hover': { backgroundColor: 'rgba(225, 48, 108, 0.2)' }
-                }}
-              >
-                <Instagram />
-              </IconButton>
-              
-              <IconButton 
-                component="a" 
-                href={contactInfo.socialMedia.linkedin} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                sx={{ 
-                  color: '#0077B5',
-                  backgroundColor: 'rgba(0, 119, 181, 0.1)',
-                  '&:hover': { backgroundColor: 'rgba(0, 119, 181, 0.2)' }
-                }}
-              >
-                <LinkedIn />
-              </IconButton>
             </Box>
           </Card>
         </CardContent>
