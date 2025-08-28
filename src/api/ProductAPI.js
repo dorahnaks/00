@@ -1,99 +1,92 @@
 // src/api/ProductAPI.js
+
 import axios from 'axios';
+import api from './axiosConfig';
 
-const API_URL = 'http://localhost:5000/api/v1';
+const API_URL = '/api/v1/products';
 
-const productAPI = {
-  // Get all products
-  getAllProducts: async () => {
+export const productAPI = {
+  // Get all products - no auth required for public access
+  getAllProducts: async (token = null) => {
     try {
-      const response = await axios.get(`${API_URL}/products`);
+      const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+      const response = await api.get(API_URL, config);
       return response.data.products;
     } catch (error) {
       console.error('Error fetching products:', error);
       throw error;
     }
   },
-
-  // Get a single product by ID
+  
+  // Get a single product by ID - no auth required
   getProduct: async (productId) => {
     try {
-      const response = await axios.get(`${API_URL}/products/${productId}`);
+      const response = await api.get(`${API_URL}/${productId}`);
       return response.data.product;
     } catch (error) {
       console.error('Error fetching product:', error);
       throw error;
     }
   },
-
-  // Create a new product
+  
+  // Create a new product - admin only
   createProduct: async (productData, token) => {
     try {
-      // Create FormData for file upload
-      const formData = new FormData();
+      console.log('Creating product with token:', token ? 'Token present' : 'No token');
       
-      // Append all form fields
-      Object.keys(productData).forEach(key => {
-        if (key !== 'image') {
-          formData.append(key, productData[key]);
-        }
-      });
-      
-      // Append image if it exists
-      if (productData.image) {
-        formData.append('image', productData.image);
-      }
-      
-      const response = await axios.post(`${API_URL}/products`, formData, {
+      // Create a separate axios instance for FormData
+      const formDataInstance = axios.create({
+        baseURL: api.defaults.baseURL,
+        timeout: 30000, // Increase timeout for file uploads
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          'Authorization': `Bearer ${token}`
         }
       });
       
+      const response = await formDataInstance.post(API_URL, productData);
       return response.data;
     } catch (error) {
       console.error('Error creating product:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+        console.error('Response headers:', error.response.headers);
+      }
       throw error;
     }
   },
-
-  // Update a product
+  
+  // Update a product - admin only
   updateProduct: async (productId, productData, token) => {
     try {
-      // Create FormData for file upload
-      const formData = new FormData();
+      console.log('Updating product with token:', token ? 'Token present' : 'No token');
       
-      // Append all form fields
-      Object.keys(productData).forEach(key => {
-        if (key !== 'image') {
-          formData.append(key, productData[key]);
-        }
-      });
-      
-      // Append image if it exists
-      if (productData.image && typeof productData.image === 'object') {
-        formData.append('image', productData.image);
-      }
-      
-      const response = await axios.put(`${API_URL}/products/${productId}`, formData, {
+      // Create a separate axios instance for FormData
+      const formDataInstance = axios.create({
+        baseURL: api.defaults.baseURL,
+        timeout: 30000, // Increase timeout for file uploads
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          'Authorization': `Bearer ${token}`
         }
       });
       
+      const response = await formDataInstance.put(`${API_URL}/${productId}`, productData);
       return response.data;
     } catch (error) {
       console.error('Error updating product:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+        console.error('Response headers:', error.response.headers);
+      }
       throw error;
     }
   },
-
-  // Delete a product
+  
+  // Delete a product - admin only
   deleteProduct: async (productId, token) => {
     try {
-      const response = await axios.delete(`${API_URL}/products/${productId}`, {
+      const response = await axios.delete(`${api.defaults.baseURL}${API_URL}/${productId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -104,11 +97,11 @@ const productAPI = {
       throw error;
     }
   },
-
-  // Search products
+  
+  // Search products - no auth required
   searchProducts: async (query) => {
     try {
-      const response = await axios.get(`${API_URL}/products/search`, {
+      const response = await api.get(`${API_URL}/search`, {
         params: { q: query }
       });
       return response.data.products;
@@ -117,23 +110,45 @@ const productAPI = {
       throw error;
     }
   },
-
-  // Get products by category
+  
+  // Get products by category - no auth required
   getProductsByCategory: async (categoryName) => {
     try {
-      const response = await axios.get(`${API_URL}/products/category/${categoryName}`);
+      const response = await api.get(`${API_URL}/category/${categoryName}`);
       return response.data.products;
     } catch (error) {
       console.error('Error fetching products by category:', error);
       throw error;
     }
   },
-
-  // Update product stock
+  
+  // Get featured products - no auth required
+  getFeaturedProducts: async () => {
+    try {
+      const response = await api.get(`${API_URL}/featured`);
+      return response.data.products;
+    } catch (error) {
+      console.error('Error fetching featured products:', error);
+      throw error;
+    }
+  },
+  
+  // Get best seller products - no auth required
+  getBestSellerProducts: async () => {
+    try {
+      const response = await api.get('/api/v1/content/home/best-sellers');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching best seller products:', error);
+      throw error;
+    }
+  },
+  
+  // Update product stock - admin only
   updateProductStock: async (productId, stockQuantity, token) => {
     try {
       const response = await axios.put(
-        `${API_URL}/products/${productId}/stock`,
+        `${api.defaults.baseURL}${API_URL}/${productId}/stock`,
         { stock_quantity: stockQuantity },
         {
           headers: {
@@ -148,11 +163,11 @@ const productAPI = {
       throw error;
     }
   },
-
-  // Get low stock products
+  
+  // Get low stock products - admin only
   getLowStockProducts: async (threshold = 10, token) => {
     try {
-      const response = await axios.get(`${API_URL}/products/low-stock`, {
+      const response = await axios.get(`${api.defaults.baseURL}${API_URL}/low-stock`, {
         params: { threshold },
         headers: {
           'Authorization': `Bearer ${token}`
@@ -161,6 +176,79 @@ const productAPI = {
       return response.data.products;
     } catch (error) {
       console.error('Error fetching low stock products:', error);
+      throw error;
+    }
+  },
+  
+  // Toggle product featured status - admin only
+  toggleProductFeatured: async (productId, token) => {
+    try {
+      const response = await axios.put(
+        `${api.defaults.baseURL}${API_URL}/${productId}/toggle-featured`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error toggling product featured status:', error);
+      throw error;
+    }
+  },
+  
+  // Toggle product best seller status - admin only
+  toggleProductBestSeller: async (productId, token) => {
+    try {
+      const response = await axios.put(
+        `${api.defaults.baseURL}${API_URL}/${productId}/toggle-best-seller`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error toggling product best seller status:', error);
+      throw error;
+    }
+  },
+  
+  // Toggle product active status - admin only
+  toggleProductActive: async (productId, token) => {
+    try {
+      const response = await axios.put(
+        `${api.defaults.baseURL}${API_URL}/${productId}/toggle-active`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error toggling product active status:', error);
+      throw error;
+    }
+  },
+  
+  // Get product categories - no auth required
+  getCategories: async () => {
+    try {
+      // First get all products
+      const products = await productAPI.getAllProducts();
+      
+      // Extract unique categories
+      const categories = [...new Set(products.map(product => product.category))];
+      
+      return categories;
+    } catch (error) {
+      console.error('Error fetching product categories:', error);
       throw error;
     }
   }

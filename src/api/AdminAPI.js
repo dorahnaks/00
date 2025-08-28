@@ -1,53 +1,80 @@
-// src/api/adminAPI.js
-import api from './index';
+import axios from 'axios';
 
-export const adminAPI = {
-  // Get all admins (super admin only)
-  getAllAdmins: async () => {
+const API_URL = 'http://localhost:5000/api/v1';
+
+const adminAPI = {
+  // Get all admins - superadmin only
+  getAllAdmins: async (token) => {
     try {
-      const response = await api.get('/admins');
-      return response.data.admins;
+      const response = await axios.get(`${API_URL}/admins`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data.data.admins;
     } catch (error) {
+      console.error('Error fetching admins:', error);
       throw error;
     }
   },
-
-  // Get single admin by ID
-  getAdminById: async (id) => {
+  
+  // Get admin by ID
+  getAdmin: async (adminId, token) => {
     try {
-      const response = await api.get(`/admins/${id}`);
-      return response.data;
+      const response = await axios.get(`${API_URL}/admins/${adminId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data.data;
     } catch (error) {
+      console.error('Error fetching admin:', error);
       throw error;
     }
   },
-
-  // Create new admin (super admin only)
-  createAdmin: async (adminData) => {
+  
+  // Update admin - superadmin only
+  updateAdmin: async (adminId, adminData, token) => {
     try {
-      const response = await api.post('/admins', adminData);
-      return response.data;
+      const response = await axios.put(`${API_URL}/admins/${adminId}`, adminData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data.data;
     } catch (error) {
+      console.error('Error updating admin:', error);
       throw error;
     }
   },
-
-  // Update admin (super admin only)
-  updateAdmin: async (id, adminData) => {
+  
+  // Delete admin - superadmin only
+  deleteAdmin: async (adminId, token) => {
     try {
-      const response = await api.put(`/admins/${id}`, adminData);
-      return response.data;
+      const response = await axios.delete(`${API_URL}/admins/${adminId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data.data;
     } catch (error) {
+      console.error('Error deleting admin:', error);
       throw error;
     }
   },
-
-  // Delete admin (super admin only)
-  deleteAdmin: async (id) => {
+  
+  // Admin logout
+  logout: async (token) => {
     try {
-      const response = await api.delete(`/admins/${id}`);
+      const response = await axios.post(`${API_URL}/admins/logout`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       return response.data;
     } catch (error) {
+      console.error('Error logging out admin:', error);
       throw error;
     }
   }

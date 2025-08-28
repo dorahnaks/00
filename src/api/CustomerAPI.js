@@ -1,63 +1,81 @@
-// src/api/customerAPI.js
-import api from './index';
+import axios from 'axios';
 
-export const customerAPI = {
-  // Get all customers (admin only)
-  getAllCustomers: async () => {
+const API_URL = 'http://localhost:5000/api/v1';
+
+const customerAPI = {
+  // Get all customers - admin only
+  getAllCustomers: async (token) => {
     try {
-      const response = await api.get('/customers');
-      return response.data.customers;
+      const response = await axios.get(`${API_URL}/customers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data.data.customers;
     } catch (error) {
+      console.error('Error fetching customers:', error);
       throw error;
     }
   },
-
-  // Get single customer by ID
-  getCustomerById: async (id) => {
+  
+  // Get customer by ID
+  getCustomer: async (customerId, token) => {
     try {
-      const response = await api.get(`/customers/${id}`);
-      return response.data;
+      const response = await axios.get(`${API_URL}/customers/${customerId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data.data;
     } catch (error) {
+      console.error('Error fetching customer:', error);
       throw error;
     }
   },
-
-  // Create new customer (admin only)
-  createCustomer: async (customerData) => {
+  
+  // Update customer - admin only
+  updateCustomer: async (customerId, customerData, token) => {
     try {
-      const response = await api.post('/customers', customerData);
-      return response.data;
+      const response = await axios.put(`${API_URL}/customers/${customerId}`, customerData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data.data;
     } catch (error) {
+      console.error('Error updating customer:', error);
       throw error;
     }
   },
-
-  // Update customer (admin only)
-  updateCustomer: async (id, customerData) => {
+  
+  // Delete customer - admin only
+  deleteCustomer: async (customerId, token) => {
     try {
-      const response = await api.put(`/customers/${id}`, customerData);
-      return response.data;
+      const response = await axios.delete(`${API_URL}/customers/${customerId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data.data;
     } catch (error) {
+      console.error('Error deleting customer:', error);
       throw error;
     }
   },
-
-  // Delete customer (admin only)
-  deleteCustomer: async (id) => {
+  
+  // Search customers - admin only
+  searchCustomers: async (query, token) => {
     try {
-      const response = await api.delete(`/customers/${id}`);
-      return response.data;
+      const response = await axios.get(`${API_URL}/customers/search`, {
+        params: { q: query },
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data.data.customers;
     } catch (error) {
-      throw error;
-    }
-  },
-
-  // Get customer orders
-  getCustomerOrders: async (customerId) => {
-    try {
-      const response = await api.get(`/customers/${customerId}/orders`);
-      return response.data.orders;
-    } catch (error) {
+      console.error('Error searching customers:', error);
       throw error;
     }
   }

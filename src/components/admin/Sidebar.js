@@ -54,12 +54,6 @@ const menuItems = [
     path: '/admin/orders',
     color: themeColors.status.warning
   },
-  { 
-    text: 'Promotions', 
-    icon: <PromotionIcon />, 
-    path: '/admin/promotions',
-    color: themeColors.status.success
-  },
 
   { 
     text: 'Feedback', 

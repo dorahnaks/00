@@ -117,9 +117,23 @@ body {
   font-size: 0.95rem;
 }
 
-.form-group input {
+/* Input with icon styling */
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  z-index: 1;
+}
+
+.input-with-icon input {
   width: 100%;
-  padding: 0.875rem;
+  padding: 0.875rem 0.875rem 0.875rem 45px;
   border: 1px solid #DDDDDD;
   border-radius: var(--border-radius);
   font-size: 1rem;
@@ -127,7 +141,25 @@ body {
   background-color: var(--white);
 }
 
-.form-group input:focus {
+.input-with-icon textarea {
+  width: 100%;
+  padding: 0.875rem 0.875rem 0.875rem 45px;
+  border: 1px solid #DDDDDD;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  background-color: var(--white);
+  min-height: 100px;
+  resize: vertical;
+}
+
+.input-with-icon.textarea-icon i {
+  top: 15px;
+  transform: none;
+}
+
+.input-with-icon input:focus,
+.input-with-icon textarea:focus {
   border-color: var(--primary-orange);
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
@@ -300,6 +332,7 @@ input[type="checkbox"] {
   margin-left: 160px;
   margin-bottom: 1rem
 }
+
 /* Login Mode Toggle */
 .login-mode-toggle {
   display: flex;
@@ -358,6 +391,7 @@ input[type="checkbox"] {
 .admin-login-info p:last-child {
   margin-bottom: 0;
 }
+
 /* API Test Container */
 .api-test-container {
   background-color: #f8f9fa;

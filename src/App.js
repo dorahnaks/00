@@ -1,7 +1,8 @@
-// App.js
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// src/App.js
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -18,7 +19,6 @@ import Cart from './components/Cart';
 import CheckoutForm from './pages/CheckoutForm';
 import OrderConfirmation from './components/OrderConfirmation';
 import CustomerProfile from './pages/CustomerProfile';
-
 // Admin Components
 import AdminLayout from './components/admin/AdminLayout';
 import AuthRoute from './components/AuthRoute';
@@ -30,7 +30,6 @@ import AdminManagement from './components/admin/AdminManagement';
 import ContactSettings from './components/admin/ContactSettings';
 import Dashboard from './components/admin/Dashboard'; 
 import AdminProfile from './components/admin/AdminProfile';
-import PromotionsManagement from './components/admin/PromotionsManagement';
 
 // Create a Layout component for customer pages
 const CustomerLayout = ({ children }) => (
@@ -45,6 +44,36 @@ const CustomerLayout = ({ children }) => (
   </>
 );
 
+// Protected Route component for authenticated users
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="loading">Loading...</div>;
+  }
+  
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
+// Role-based redirect component
+const RoleBasedRedirect = () => {
+  const { isAuthenticated, isLoading, isAdmin, isSuperAdmin } = useAuth();
+  
+  if (isLoading) {
+    return <div className="loading">Loading...</div>;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+  
+  if (isAdmin() || isSuperAdmin()) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+  
+  return <Navigate to="/" replace />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -52,20 +81,22 @@ function App() {
         <Router>
           <div className="app">
             <Routes>
+              {/* Role-based redirect route */}
+              <Route path="/redirect" element={<RoleBasedRedirect />} />
+              
               {/* Admin Routes */}
               <Route path="/admin/*" element={
-                <AuthRoute adminOnly>
+                <AuthRoute adminOnly={true}>
                   <AdminLayout>
                     <Routes>
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="customers" element={<CustomerManagement />} />
                       <Route path="products" element={<ProductManagement />} />
                       <Route path="orders" element={<OrderManagement />} />
-                      <Route path="promotions" element={<PromotionsManagement />} />
                       <Route path="feedback" element={<FeedbackManagement />} />
                       {/* Superadmin only routes */}
                       <Route path="admins" element={
-                        <AuthRoute superAdminOnly>
+                        <AuthRoute superAdminOnly={true}>
                           <AdminManagement />
                         </AuthRoute>
                       } />
@@ -119,25 +150,25 @@ function App() {
                 </CustomerLayout>
               } />
               <Route path="/checkout" element={
-                <AuthRoute>
+                <ProtectedRoute>
                   <CustomerLayout>
                     <CheckoutForm />
                   </CustomerLayout>
-                </AuthRoute>
+                </ProtectedRoute>
               } />
               <Route path="/order-confirmation" element={
-                <AuthRoute>
+                <ProtectedRoute>
                   <CustomerLayout>
                     <OrderConfirmation />
                   </CustomerLayout>
-                </AuthRoute>
+                </ProtectedRoute>
               } />
               <Route path="/account" element={
-                <AuthRoute>
+                <ProtectedRoute>
                   <CustomerLayout>
                     <CustomerProfile />
                   </CustomerLayout>
-                </AuthRoute>
+                </ProtectedRoute>
               } />
               
               {/* Catch-all route */}

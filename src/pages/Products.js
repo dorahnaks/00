@@ -1,23 +1,21 @@
 // src/pages/Products.js
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import productAPI from '../api/ProductAPI';
 import '../styles/Products.css';
-import ProductCard from '../components/ProductForm';
+import ProductCard from '../components/ProductCard';
 
 const Products = () => {
-  const { cart = [], token } = useAuth(); // Added default empty array for cart
-  const navigate = useNavigate();
+  const { cart = [] } = useAuth(); // Only need cart, remove auth dependencies
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [showMore, setShowMore] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  
   // Available categories
   const categories = [
     "Fresh Fruits",
@@ -26,65 +24,35 @@ const Products = () => {
     "Detox Juice Packages"
   ];
 
-  // Check token expiration and redirect if expired
-  useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
+  // Fetch products from API (no auth required)
+  const fetchProducts = useCallback(async () => {
     try {
-      // Decode JWT to get expiration time
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expiryTime = payload.exp * 1000; // Convert to milliseconds
-      
-      // Check if token is already expired
-      if (Date.now() > expiryTime) {
-        handleTokenExpired();
-        return;
-      }
-      
-      // Set up a timer to check token expiration
-      const timeUntilExpiry = expiryTime - Date.now();
-      const timer = setTimeout(() => {
-        handleTokenExpired();
-      }, timeUntilExpiry);
-      
-      return () => clearTimeout(timer);
+      setLoading(true);
+      console.log('Fetching products...');
+      // Remove token dependency - API call doesn't require authentication
+      const productsData = await productAPI.getAllProducts();
+      console.log('Products fetched:', productsData);
+      setProducts(productsData);
+      setError(null);
     } catch (err) {
-      console.error('Error decoding token:', err);
-      handleTokenExpired();
-    }
-  }, [token, navigate]);
-
-  const handleTokenExpired = () => {
-    // Remove token from localStorage
-    localStorage.removeItem('token');
-    // Redirect to login page
-    navigate('/login');
-  };
-
-  // Fetch products from API
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const productsData = await productAPI.getAllProducts(token);
-        setProducts(productsData);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching products:', err);
-        if (err.response && err.response.status === 401) {
-          handleTokenExpired();
-        } else {
-          setError('Failed to load products. Please try again later.');
-        }
-      } finally {
-        setLoading(false);
+      console.error('Error fetching products:', err);
+      if (err.response) {
+        console.error('Response status:', err.response.status);
+        console.error('Response data:', err.response.data);
+      } else if (err.request) {
+        console.error('No response received:', err.request);
+      } else {
+        console.error('Error message:', err.message);
       }
-    };
+      setError('Failed to load products. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
     fetchProducts();
-  }, [token]);
+  }, [fetchProducts]);
 
   // Filter products based on search term and category
   const filteredProducts = products.filter(product => {
@@ -119,7 +87,7 @@ const Products = () => {
           <p>{error}</p>
           <button 
             className="btn-primary-n"
-            onClick={() => window.location.reload()}
+            onClick={fetchProducts}
           >
             Retry
           </button>
@@ -150,7 +118,7 @@ const Products = () => {
             value={categoryFilter}
             onChange={(e) => {
               setCategoryFilter(e.target.value);
-              setShowMore(false); // Reset show more when category changes
+              setShowMore(false);
             }}
             className="category-filter"
           >
@@ -168,16 +136,9 @@ const Products = () => {
       {categoryFilter === "" ? (
         // Show all categories when no filter is selected
         <>
-          {/* Fresh Fruits Section */}
           {renderCategorySection("Fresh Fruits")}
-          
-          {/* Natural Juices Section */}
           {renderCategorySection("Natural Juices")}
-          
-          {/* Dried Fruits Section */}
           {renderCategorySection("Dried Fruits")}
-          
-          {/* Detox Juice Packages Section */}
           {renderCategorySection("Detox Juice Packages")}
         </>
       ) : (

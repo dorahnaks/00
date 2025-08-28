@@ -1,18 +1,36 @@
-// src/components/HealthTips.js
 import React, { useState, useEffect } from 'react';
 import HealthTipCard from '../components/HealthTipCard';
-import { healthTipsData, quickTipsData } from '../components/HealthTipsData';
 import '../styles/HealthTips.css';
 
 const HealthTips = () => {
+  const [healthTips, setHealthTips] = useState([]);
+  const [quickTips, setQuickTips] = useState([]);
   const [visibleTips, setVisibleTips] = useState(6);
-  const [filteredTips, setFilteredTips] = useState(healthTipsData);
+  const [filteredTips, setFilteredTips] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Filter tips based on category and search term
   useEffect(() => {
-    let result = healthTipsData;
+    Promise.all([
+      fetch('http://localhost:5000/api/health-tips'),
+      fetch('http://localhost:5000/api/quick-tips')
+    ])
+    .then(responses => Promise.all(responses.map(res => res.json())))
+    .then(([healthTipsData, quickTipsData]) => {
+      setHealthTips(healthTipsData);
+      setFilteredTips(healthTipsData);
+      setQuickTips(quickTipsData);
+      setLoading(false);
+    })
+    .catch(error => {
+      console.error('Error fetching health tips:', error);
+      setLoading(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    let result = healthTips;
     
     if (activeCategory !== 'all') {
       result = result.filter(tip => tip.category === activeCategory);
@@ -27,12 +45,16 @@ const HealthTips = () => {
     }
     
     setFilteredTips(result);
-    setVisibleTips(6); // Reset visible tips when filters change
-  }, [activeCategory, searchTerm]);
+    setVisibleTips(6);
+  }, [activeCategory, searchTerm, healthTips]);
 
   const handleShowMore = () => {
     setVisibleTips(prev => prev + 6);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="health-tips">
@@ -40,7 +62,7 @@ const HealthTips = () => {
         <h1>Health & Nutrition Tips</h1>
         <p>Discover the amazing benefits of fruits and juices for your health and wellbeing</p>
       </div>
-
+      
       <div className="filter-section">
         <div className="search-container">
           <input
@@ -84,11 +106,11 @@ const HealthTips = () => {
           </button>
         </div>
       </div>
-
+      
       <div className="tips-count">
         Showing {Math.min(visibleTips, filteredTips.length)} of {filteredTips.length} tips
       </div>
-
+      
       <div className="tips-container">
         {filteredTips.slice(0, visibleTips).map((tip) => (
           <HealthTipCard
@@ -101,7 +123,7 @@ const HealthTips = () => {
           />
         ))}
       </div>
-
+      
       {visibleTips < filteredTips.length && (
         <div className="show-more-container">
           <button className="show-more-btn" onClick={handleShowMore}>
@@ -109,11 +131,11 @@ const HealthTips = () => {
           </button>
         </div>
       )}
-
+      
       <div className="quick-tips-section">
         <h2>Quick Tips</h2>
         <div className="quick-tips-scroll">
-          {quickTipsData.map((tip) => (
+          {quickTips.map((tip) => (
             <div key={tip.id} className="quick-tip">
               <div className="quick-tip-icon-container">
                 <div className="quick-tip-icon">{tip.icon}</div>

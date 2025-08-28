@@ -1,15 +1,30 @@
-import React from 'react';
-import { Link } from 'react-router-dom'; // Import Link component
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/Home.css';
-import ProductCard from '../components/ProductForm'; // Fixed import path
-import orangeJuiceImg from '../images/orange_juice_home.png';
-import appleHomeImg from '../images/apple_home.png';
-import berrySmoothieImg from '../images/smoothie.png';
-import tropicalSellersImg from '../images/salad.png';
-import jui_order from '../images/jui_order_pg.jpg'
+import ProductCard from '../components/ProductCard';
 import { FaLeaf, FaHeartbeat, FaBolt } from 'react-icons/fa';
 
 const Home = () => {
+  const [bestSellers, setBestSellers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/home/best-sellers')
+      .then(response => response.json())
+      .then(data => {
+        setBestSellers(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching best sellers:', error);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="home">
       {/* Hero Section */}
@@ -23,31 +38,15 @@ const Home = () => {
       <section className="best-sellers">
         <h2>Best Sellers</h2>
         <div className="products-grid">
-          <ProductCard 
-            image={orangeJuiceImg}
-            title="Orange Juice" 
-            description="Made with 100% fresh oranges" 
-          />
-          <ProductCard 
-            image={appleHomeImg}
-            title="Crisp Apples" 
-            description="Grown locally, full of flavour" 
-          />
-          <ProductCard 
-            image={berrySmoothieImg}
-            title="Berry Smoothie" 
-            description="Blend of berries and yoghurt" 
-          />
-          <ProductCard 
-            image={tropicalSellersImg}
-            title="Tropical Sellers" 
-            description="A refreshing mix of tropical fruits" 
-          />
-          <ProductCard 
-            image={jui_order}
-            title="juice" 
-            description="Sweet and tasty juice from naural fruits" 
-          />
+          {bestSellers.map(seller => (
+            <ProductCard 
+              key={seller.id}
+              image={seller.product.image_url}
+              title={seller.product.name} 
+              description={seller.product.description} 
+              price={seller.product.price}
+            />
+          ))}
         </div>
       </section>
       

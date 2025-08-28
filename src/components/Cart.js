@@ -5,7 +5,14 @@ import '../styles/Cart.css';
 import { Link } from 'react-router-dom';
 
 const Cart = () => {
-  const { cart, clearCart, removeFromCart, updateQuantity, stockError, clearStockError } = useCart();
+  const { 
+    cart, 
+    clearCart, 
+    removeFromCart, 
+    updateCartItem, // Use the correct function name from context
+    stockError, 
+    clearStockError 
+  } = useCart();
   
   if (cart.length === 0) {
     return (
@@ -20,9 +27,10 @@ const Cart = () => {
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   
   const handleQuantityChange = (productId, newQuantity, stockQuantity) => {
-    updateQuantity(productId, newQuantity, stockQuantity);
+    // Use the correct function name from context
+    updateCartItem(productId, newQuantity, stockQuantity);
   };
-
+  
   return (
     <div className="cart-container">
       <h2>Your Cart</h2>

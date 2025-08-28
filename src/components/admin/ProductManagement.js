@@ -1,5 +1,6 @@
 // src/components/admin/ProductManagement.js
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Grid, 
   Card, 
@@ -21,7 +22,6 @@ import {
   InputLabel,
   CircularProgress,
   Paper,
-  useMediaQuery,
   useTheme,
   Chip,
   Badge,
@@ -37,18 +37,20 @@ import {
   FormHelperText,
   Divider,
   Avatar,
-  Stack
+  Stack,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
-import { Search, Add, Edit, Delete, Category, AttachMoney, Inventory, 
-        ShoppingCart, Filter, Sort, ViewModule, ViewList, Save, Cancel, CloudUpload } from '@mui/icons-material';
+import { Search, Add, Edit, Delete, AttachMoney, Inventory, 
+        ViewModule, ViewList, Save, Cancel, CloudUpload, ExpandMore } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import productAPI from '../../api/ProductAPI';
 
 const ProductManagement = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { token, setToken } = useAuth();
+  const { token, logout } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,22 +64,30 @@ const ProductManagement = () => {
   const [error, setError] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [formErrors, setFormErrors] = useState({});
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid');
+  const [debugInfo, setDebugInfo] = useState(null);
   
   // Updated categories with green colors
   const categories = [
-    { name: 'Fresh Fruits', color: '#4CAF50' }, // Green
-    { name: 'Natural Juices', color: '#8BC34A' }, // Light Green
-    { name: 'Dried Fruits', color: '#009688' }, // Teal
-    { name: 'Detox Juice Packages', color: '#00BCD4' }, // Cyan
+    { name: 'Fresh Fruits', color: '#4CAF50' },
+    { name: 'Natural Juices', color: '#8BC34A' },
+    { name: 'Dried Fruits', color: '#009688' },
+    { name: 'Detox Juice Packages', color: '#00BCD4' },
   ];
+
+  // Handle token expiration
+  const handleTokenExpired = useCallback(() => {
+    logout();
+    navigate('/login');
+  }, [logout, navigate]);
 
   // Check token expiration and redirect if expired
   useEffect(() => {
     if (!token) {
-      navigate('/login');
+      handleTokenExpired();
       return;
     }
+    
     try {
       // Decode JWT to get expiration time
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -100,19 +110,10 @@ const ProductManagement = () => {
       console.error('Error decoding token:', err);
       handleTokenExpired();
     }
-  }, [token, navigate]);
+  }, [token, handleTokenExpired]);
 
-  const handleTokenExpired = () => {
-    setToken(null);
-    // Immediately redirect to login without showing a message
-    navigate('/login');
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  // Fetch products
+  const fetchProducts = useCallback(async () => {
     if (!token) return;
     
     try {
@@ -130,7 +131,11 @@ const ProductManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, handleTokenExpired]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -147,23 +152,39 @@ const ProductManagement = () => {
       category: '', 
       stock_quantity: 0,
       image_url: '',
-      image: null
+      image: null,
+      is_active: true,
+      is_featured: false
     });
     setImagePreview(product && product.image_url ? `http://localhost:5000${product.image_url}` : '');
     setIsEditing(!!product);
     setFormErrors({});
     setOpen(true);
+    setDebugInfo(null);
   };
 
   const handleClose = () => {
     setOpen(false);
     setCurrentProduct(null);
     setImagePreview('');
+    setDebugInfo(null);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      if (!file.type.match('image.*')) {
+        setError('Please select an image file');
+        return;
+      }
+      
+      // Validate file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size should be less than 5MB');
+        return;
+      }
+      
       setCurrentProduct(prevProduct => ({
         ...(prevProduct || { 
           name: '', 
@@ -172,7 +193,9 @@ const ProductManagement = () => {
           category: '', 
           stock_quantity: 0,
           image_url: '',
-          image: null
+          image: null,
+          is_active: true,
+          is_featured: false
         }),
         image: file
       }));
@@ -203,20 +226,26 @@ const ProductManagement = () => {
     
     const errors = {};
     
+    // Validate name
     if (!currentProduct.name || !currentProduct.name.trim()) {
       errors.name = 'Product name is required';
+    } else if (currentProduct.name.trim().length < 2) {
+      errors.name = 'Product name must be at least 2 characters';
     }
     
+    // Validate price
     if (!currentProduct.price) {
       errors.price = 'Price is required';
     } else if (isNaN(currentProduct.price) || parseFloat(currentProduct.price) <= 0) {
       errors.price = 'Price must be a positive number';
     }
     
+    // Validate category
     if (!currentProduct.category) {
       errors.category = 'Category is required';
     }
     
+    // Validate stock quantity
     if (currentProduct.stock_quantity === undefined || currentProduct.stock_quantity === null) {
       errors.stock_quantity = 'Stock quantity is required';
     } else if (isNaN(currentProduct.stock_quantity) || parseInt(currentProduct.stock_quantity) < 0) {
@@ -235,19 +264,45 @@ const ProductManagement = () => {
     try {
       setSubmitting(true);
       setError(null);
+      setDebugInfo(null);
       
       // Create FormData for file upload
       const formData = new FormData();
-      formData.append('name', currentProduct.name);
-      formData.append('description', currentProduct.description);
-      formData.append('price', parseFloat(currentProduct.price));
-      formData.append('category', currentProduct.category);
-      formData.append('stock_quantity', parseInt(currentProduct.stock_quantity));
       
-      // Only append image if it exists and is a File object
+      // Append all required fields with proper string conversion
+      formData.append('name', currentProduct.name.trim());
+      formData.append('description', currentProduct.description ? currentProduct.description.trim() : '');
+      formData.append('price', currentProduct.price.toString());
+      formData.append('category', currentProduct.category);
+      formData.append('stock_quantity', currentProduct.stock_quantity.toString());
+      formData.append('is_active', currentProduct.is_active ? 'true' : 'false');
+      formData.append('is_featured', currentProduct.is_featured ? 'true' : 'false');
+      
+      // Handle image properly
       if (currentProduct.image instanceof File) {
         formData.append('image', currentProduct.image);
+      } else if (isEditing && currentProduct.image_url) {
+        // For existing products with unchanged images
+        formData.append('image_url', currentProduct.image_url);
       }
+      
+      // Debug: Log form data contents
+      const debugData = {
+        url: isEditing ? `${productAPI.updateProduct.toString()}/${currentProduct.id}` : productAPI.createProduct.toString(),
+        method: isEditing ? 'PUT' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        formData: {}
+      };
+      
+      for (let pair of formData.entries()) {
+        debugData.formData[pair[0]] = pair[1];
+      }
+      
+      setDebugInfo(debugData);
+      console.log('Form data being sent:', debugData);
       
       if (isEditing) {
         await productAPI.updateProduct(currentProduct.id, formData, token);
@@ -256,6 +311,7 @@ const ProductManagement = () => {
         await productAPI.createProduct(formData, token);
         setSuccess('Product created successfully');
       }
+      
       handleClose();
       fetchProducts();
       
@@ -263,10 +319,30 @@ const ProductManagement = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Error saving product:', err);
+      
+      // Enhanced error information
+      const errorDetails = {
+        message: err.message,
+        stack: err.stack,
+        response: err.response ? {
+          status: err.response.status,
+          statusText: err.response.statusText,
+          data: err.response.data,
+          headers: err.response.headers
+        } : null,
+        request: err.request ? {
+          method: err.request.method,
+          url: err.request.url,
+          headers: err.request.headers
+        } : null
+      };
+      
+      setDebugInfo(errorDetails);
+      
       if (err.response && err.response.status === 401) {
         handleTokenExpired();
       } else {
-        setError(err.response?.data?.error || 'Failed to save product');
+        setError(err.response?.data?.error || err.message || 'Failed to save product');
       }
     } finally {
       setSubmitting(false);
@@ -303,7 +379,9 @@ const ProductManagement = () => {
         category: '', 
         stock_quantity: 0,
         image_url: '',
-        image: null
+        image: null,
+        is_active: true,
+        is_featured: false
       }),
       [name]: value
     }));
@@ -340,10 +418,24 @@ const ProductManagement = () => {
       
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
+          <Typography variant="body1">{error}</Typography>
         </Alert>
       )}
-
+      
+      {/* Debug Information */}
+      {debugInfo && (
+        <Accordion sx={{ mb: 2 }}>
+          <AccordionSummary expandIcon={<ExpandMore />}>
+            <Typography>Debug Information</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography component="pre" sx={{ fontSize: '0.8rem', fontFamily: 'monospace' }}>
+              {JSON.stringify(debugInfo, null, 2)}
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+      )}
+      
       {/* Header */}
       <Box sx={{ 
         display: 'flex', 

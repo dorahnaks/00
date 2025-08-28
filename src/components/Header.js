@@ -68,6 +68,23 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   }, [navigate]);
   
+  // Safely get user's display name
+  const getUserDisplayName = () => {
+    if (!user) return 'User';
+    
+    // Try to get name from user object
+    if (user.name) {
+      return user.name.split(' ')[0]; // Get first name
+    }
+    
+    // Fallback to email if name is not available
+    if (user.email) {
+      return user.email.split('@')[0]; // Get part before @
+    }
+    
+    return 'User'; // Final fallback
+  };
+  
   return (
     <header className="header">
       <div className="logo-container">
@@ -200,10 +217,16 @@ const Header = () => {
                 </svg>
               </div>
               <div className={`user-menu ${isUserMenuOpen ? 'active' : ''}`}>
-                <span>Welcome, {user?.email.split('@')[0]}</span>
+                <span>Welcome, {getUserDisplayName()}</span>
                 <Link to="/account" className="account-link" onClick={() => setIsUserMenuOpen(false)}>
                   My Account
                 </Link>
+                {/* Add admin dashboard link for admin users */}
+                {(user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'super_admin') && (
+                  <Link to="/admin/dashboard" className="account-link" onClick={() => setIsUserMenuOpen(false)}>
+                    Admin Dashboard
+                  </Link>
+                )}
                 <button onClick={() => { logout(); setIsUserMenuOpen(false); }} className="logout-btn">
                   Logout
                 </button>

@@ -1,4 +1,3 @@
-// src/components/admin/ContactSettings.js
 import React, { useState, useEffect } from 'react';
 import { 
   TextField, 
@@ -11,7 +10,8 @@ import {
   CircularProgress,
   Card,
   CardContent,
-  Chip
+  Chip,
+  Alert
 } from '@mui/material';
 import { 
   Phone, 
@@ -53,6 +53,8 @@ const ContactSettings = () => {
   const fetchContactInfo = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const response = await contactAPI.getContactInfo();
       
       // Initialize with API data or defaults
@@ -72,6 +74,7 @@ const ContactSettings = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching contact info:', error);
+      setError('Failed to load contact information');
       setLoading(false);
     }
   };
@@ -91,7 +94,6 @@ const ContactSettings = () => {
     });
   };
 
-// src/components/admin/ContactSettings.js
   const handleSave = async () => {
     setSubmitting(true);
     setError(null);
@@ -107,7 +109,7 @@ const ContactSettings = () => {
       };
       
       console.log('Saving contact info:', dataToSave);
-      console.log('Using token:', token);
+      console.log('Using token:', token ? token.substring(0, 20) + '...' : 'No token');
       
       // Save to backend
       const response = await contactAPI.updateContactInfo(dataToSave, token);
@@ -130,6 +132,7 @@ const ContactSettings = () => {
       setSubmitting(false);
     }
   };
+
   const handleCancel = () => {
     fetchContactInfo();
     setIsEditing(false);
@@ -172,23 +175,15 @@ const ContactSettings = () => {
       </Box>
       
       {success && (
-        <Box sx={{ mb: 2 }}>
-          <Chip 
-            label="Contact information saved successfully!" 
-            color="success" 
-            sx={{ fontWeight: 'bold' }}
-          />
-        </Box>
+        <Alert severity="success" sx={{ mb: 2 }}>
+          Contact information saved successfully!
+        </Alert>
       )}
       
       {error && (
-        <Box sx={{ mb: 2 }}>
-          <Chip 
-            label={error} 
-            color="error" 
-            sx={{ fontWeight: 'bold' }}
-          />
-        </Box>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
       )}
       
       <Card sx={{ borderRadius: '16px', overflow: 'hidden', boxShadow: themeColors.shadow.light }}>
@@ -287,9 +282,6 @@ const ContactSettings = () => {
               <Typography variant="h6" gutterBottom sx={{ color: themeColors.primary.main, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
                 <Public sx={{ mr: 1 }} />
                 Social Media Links
-                <Typography variant="caption" sx={{ ml: 1, color: themeColors.neutral.text.secondary }}>
-                  
-                </Typography>
               </Typography>
               
               <TextField
@@ -439,30 +431,34 @@ const ContactSettings = () => {
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Phone sx={{ mr: 1, color: themeColors.primary.main }} />
-              <Typography>{contactInfo.phone}</Typography>
+              <Typography>{contactInfo.phone || 'No phone number'}</Typography>
             </Box>
             
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Email sx={{ mr: 1, color: themeColors.primary.main }} />
-              <Typography>{contactInfo.email}</Typography>
+              <Typography>{contactInfo.email || 'No email address'}</Typography>
             </Box>
             
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <LocationOn sx={{ mr: 1, color: themeColors.primary.main }} />
-              <Typography>{contactInfo.location}</Typography>
+              <Typography>{contactInfo.location || 'No location provided'}</Typography>
             </Box>
             
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Map sx={{ mr: 1, color: themeColors.primary.main }} />
-              <Typography 
-                component="a" 
-                href={contactInfo.mapLink} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                sx={{ color: themeColors.primary.main, textDecoration: 'none', fontWeight: '500' }}
-              >
-                View on Google Maps
-              </Typography>
+              {contactInfo.mapLink ? (
+                <Typography 
+                  component="a" 
+                  href={contactInfo.mapLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  sx={{ color: themeColors.primary.main, textDecoration: 'none', fontWeight: '500' }}
+                >
+                  View on Google Maps
+                </Typography>
+              ) : (
+                <Typography color="textSecondary">No map link provided</Typography>
+              )}
             </Box>
           </Card>
         </CardContent>

@@ -1,5 +1,5 @@
-// src/components/ProductForm.js
-import React, { useState } from 'react';
+// src/components/ProductCard.js
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import '../styles/ProductForm.css';
 
@@ -17,19 +17,33 @@ const ProductCard = ({ id, title, description, price, category, image, stock_qua
     console.log(`ProductCard [${title}]: ${message}`);
   };
   
+  // Clear stock error when component unmounts
+  useEffect(() => {
+    return () => {
+      if (stockError && stockError.productId === id) {
+        clearStockError();
+      }
+    };
+  }, [id, stockError, clearStockError]);
+  
   // Check if there's a stock error for this product
-  if (stockError && stockError.productId === id) {
-    if (!showStockError) {
+  useEffect(() => {
+    if (stockError && stockError.productId === id) {
       setShowStockError(true);
+    } else if (showStockError) {
+      setShowStockError(false);
     }
-  } else if (showStockError) {
-    setShowStockError(false);
-  }
-
+  }, [stockError, id, showStockError]);
+  
   const handleAddToCart = () => {
     debugLog(`Add to cart clicked, stock: ${stock_quantity}`);
     
     if (stock_quantity <= 0) return;
+    
+    // Clear any existing stock error for this product
+    if (stockError && stockError.productId === id) {
+      clearStockError();
+    }
     
     setIsAdding(true);
     
@@ -55,7 +69,7 @@ const ProductCard = ({ id, title, description, price, category, image, stock_qua
 
   const isOutOfStock = stock_quantity <= 0;
   const isLowStock = stock_quantity > 0 && stock_quantity <= 5;
-
+  
   return (
     <div className="product-card">
       <div className="product-image">
